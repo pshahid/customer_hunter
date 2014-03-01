@@ -11,7 +11,7 @@ def read_from_db(fname):
 
     with open(fname, "w") as f:
         csv_writer = csv.writer(f, dialect='excel')
-        
+
         for tweet in Tweet.select():
             row = []
             row.append(tweet.id)
@@ -24,16 +24,8 @@ def read_from_db(fname):
             row.append(tweet.latitude)
             row.append(tweet.longitude)
             row.append(tweet.username)
-            rows.append(row)
-            count = count + 1
 
-            if count % 1000 == 0:
-                count = 0
-                csv_writer.writerows(rows)
-                rows = []
-
-        if len(rows) > 0:
-            csv_writer.writerows(rows)
+            csv_writer.writerow(row)
 
 if __name__ == "__main__":
     read_from_db("tweet.csv")
