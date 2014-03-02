@@ -14,16 +14,20 @@ def read_from_db(fname):
 
         for tweet in Tweet.select().iterator():
             row = []
-            row.append(tweet.id)
+            row.append('')
             row.append(tweet.message.encode('ascii', 'ignore'))
-            row.append(tweet.created_date)
-            row.append(tweet.twitter_id)
-            row.append(tweet.in_reply_to_user_id)
-            row.append(tweet.in_reply_to_screen_name)
-            row.append(tweet.in_reply_to_status_id)
-            row.append(tweet.latitude)
-            row.append(tweet.longitude)
-            row.append(tweet.username)
+            # row.append(tweet.id)
+
+            # #Peewee is expecting ascii, but it's unicode that we're given
+            # row.append(tweet.message.encode('ascii', 'ignore'))
+            # row.append(tweet.created_date)
+            # row.append(tweet.twitter_id)
+            # row.append(tweet.in_reply_to_user_id)
+            # row.append(tweet.in_reply_to_screen_name)
+            # row.append(tweet.in_reply_to_status_id)
+            # row.append(tweet.latitude)
+            # row.append(tweet.longitude)
+            # row.append(tweet.username)
 
             csv_writer.writerow(row)
 
