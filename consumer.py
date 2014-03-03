@@ -66,8 +66,12 @@ def main():
                         time_conversion = datetime.datetime.now()
 
                     # message = scrub_message(tweet.get('text'))
+                    msg = tweet.get('text')
+                    if msg is not None:
+                        msg.replace("&amp;", "&")
+
                     my_tweet = Tweet(
-                        message=tweet.get('text'),
+                        message=msg,
                         created_date=time_conversion,
                         twitter_id=tweet.get('id')
                     )
