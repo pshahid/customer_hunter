@@ -69,6 +69,13 @@ def main():
                     msg = tweet.get('text')
                     if msg is not None:
                         msg.replace("&amp;", "&")
+                        msg.replace("&lt;", "<")
+                        msg.replace("&gt;", ">")
+                        msg.replace("&quot;", '"')
+                        msg.replace("&#39;", "'")
+                        msg.replace("&#039", "'")
+                        msg.replace("\n", '')
+                        msg.replace("\r\n", '')
 
                     my_tweet = Tweet(
                         message=msg,
