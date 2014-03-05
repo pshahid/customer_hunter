@@ -54,9 +54,9 @@ The first index of each sub-list is assumed to be a label and the second
 index is assumed to be a tweet (string)
 '''
 def randomize_datasets(dataset):
-    np.random.seed(0)
+    np.random.seed()
     np.random.shuffle(dataset)
-
+    # print dataset
     labels = []
     messages = []
 
