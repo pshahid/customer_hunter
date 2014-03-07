@@ -1,6 +1,7 @@
 import csv
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
 import numpy as np
 
 def main():
@@ -17,10 +18,6 @@ def main():
         X = vectorizer.fit_transform(tweets[:-100])
         y = labels[:-100]
 
-        #Create a logit regression classifier
-        classifier = LogisticRegression(C=1e5)
-        classifier.fit(X,y)
-
         '''
         We need to create a randomized list of messages so the training set 
         doesn't get accustomed to reading the data the same every time and
@@ -29,7 +26,8 @@ def main():
         First, create indices list the size of messages and shuffle it.
         Then, shuffle the actual list
         '''
-
+        # classifier = train_logit(X, y)
+        classifier = train_sgd(X, y)        
         #This is our test set
         x_test = vectorizer.transform(tweets[-100:])
 
@@ -66,6 +64,38 @@ def randomize_datasets(dataset):
         labels.append(datum[0])
 
     return (labels, messages)
+
+'''
+Extract features from the data and return it as a numpy sparse matrix
+'''
+def extract(tweets):
+    pass
+
+'''
+Given a classification algorithm train the data on the given labels and tweets
+'''
+def train(labels, tweets):
+    pass
+
+def test(labels, tweets):
+    pass
+
+def validate(filename):
+    pass
+
+def train_logit(X, y):
+    #Create a logit regression classifier
+    classifier = LogisticRegression(C=1e5)
+    classifier.fit_transform(X, y)
+
+    return classifier
+
+def train_sgd(X, y):
+    #Hinge loss uses SVM, log uses logit regression
+    classifier = SGDClassifier(loss='hinge', penalty='l2')
+    classifier.fit_transform(X, y)
+
+    return classifier
 
 if __name__ == "__main__":
     main()
