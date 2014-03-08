@@ -2,6 +2,7 @@ import csv
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
+from sklearn.neural_network import BernoulliRBM
 import numpy as np
 
 def main():
@@ -11,12 +12,12 @@ def main():
 
         labels, tweets = randomize_datasets(rows[1:])
 
-        msgs_length = len(tweets) - 100
+        msgs_length = len(tweets) - 700
 
         #Vectorize our input based on the tf-idf algorithm
-        vectorizer = TfidfVectorizer(input="content", ngram_range=(1, 3))   #Gonna feed it messages list; uni, bi & tri grams
-        X = vectorizer.fit_transform(tweets[:-100])
-        y = labels[:-100]
+        vectorizer = TfidfVectorizer(input="content", ngram_range=(1, 3), min_df=5)   #Gonna feed it messages list; uni, bi & tri grams
+        X = vectorizer.fit_transform(tweets[:-700])
+        y = labels[:-700]
 
         '''
         We need to create a randomized list of messages so the training set 
@@ -29,20 +30,20 @@ def main():
         # classifier = train_logit(X, y)
         classifier = train_sgd(X, y)        
         #This is our test set
-        x_test = vectorizer.transform(tweets[-100:])
+        x_test = vectorizer.transform(tweets[-700:])
 
 
         predictions = classifier.predict(x_test)
         print predictions
-        print labels[-100:]
+        print labels[-700:]
 
         count = 0
-        for i in range(100):
-            if predictions[i] == labels[-100+i]:
+        for i in range(700):
+            if predictions[i] == labels[-700+i]:
                 count += 1
-            print "Predicted: " + predictions[i] + " | Actual: " + labels[-100+i] 
+            print "Predicted: " + predictions[i] + " | Actual: " + labels[-700+i] 
 
-        print "Total number correct out of 100: " + str(count)
+        print "Total number correct out of 700: " + str(count)
 
 '''
 Randomly shuffle the given data set and return a tuple of (labels, tweets).
@@ -83,6 +84,9 @@ def test(labels, tweets):
 def validate(filename):
     pass
 
+'''
+Train the data set on Logistic Regression.
+'''
 def train_logit(X, y):
     #Create a logit regression classifier
     classifier = LogisticRegression(C=1e5)
@@ -90,12 +94,19 @@ def train_logit(X, y):
 
     return classifier
 
+'''
+Train the data set on stochastic gradient descent
+'''
 def train_sgd(X, y):
     #Hinge loss uses SVM, log uses logit regression
     classifier = SGDClassifier(loss='hinge', penalty='l2')
     classifier.fit_transform(X, y)
 
     return classifier
+
+def train_binnb(X, y):
+    pass
+
 
 if __name__ == "__main__":
     main()

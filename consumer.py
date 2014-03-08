@@ -4,8 +4,9 @@ import time
 import datetime
 from peewee import *
 from models import * 
+import config
 
-dbconn = MySQLDatabase("social_consumer", user="root")
+dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 
 def main():
     dbconn.connect()
@@ -15,10 +16,10 @@ def main():
 
     print("Initializing the consumer...")
     api = twitter.Api(\
-        consumer_key="s2amklHxL5CPIuJODNDo6g",\
-        consumer_secret="vS74EYL9PsXTG3wWOlpoEREQmhcS9gKpIjJLWwHg",\
-        access_token_key="125708842-bvfTWAHUwGqrd3LE5wDHCeuOxpHlGki7H4G4oEKb", 
-        access_token_secret="rc8R5D6DJoIA7vj6Ubz1dPkt3tANLUBJ0xxEzdd2ORWg4")
+        consumer_key=config.api_key,\
+        consumer_secret=config.api_secret,\
+        access_token_key=config.access_token, 
+        access_token_secret=config.access_secret)
 
     print("Verifying credentials.")
     user = api.VerifyCredentials()

@@ -1,0 +1,10 @@
+#Twitter specific OAuth2 shenanigans
+api_key = ""
+api_secret = ""
+access_token = ""
+access_secret = ""
+
+#Database
+db = "social_consumer"
+user = "root"
+password = ""

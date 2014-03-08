@@ -4,13 +4,13 @@ import csv
 def main():
     matchexpr = "\\n[^((1|0)\\,)]"
     rows = []
-    with open('trained_tweets.csv', 'r') as f:
+    with open('tweet.csv', 'r') as f:
         reader = csv.reader(f, quotechar='"')
 
         for row in reader:
             rows.append(row)
 
-    with open('trained_and_cleansed.csv', 'w') as f:
+    with open('untrained_cleansed.csv', 'w') as f:
 
         writer = csv.writer(f, quotechar='"')
         for row in rows:
