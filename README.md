@@ -14,7 +14,6 @@ Things you'll need in the order that you'll need them:
 * [Git](http://git-scm.com/downloads)
 * [Python 2.7 (preferably 2.7.6)](http://python.org/downloads/windows)
 * [MySQL Database](http://dev.mysql.com/downloads/mysql/)
-* [MySQL Database Connector](http://dev.mysql.com/downloads/connector/python/)
 * [Scikit-learn](http://scikit-learn.org/stable/install.html#windows-installer)
 * [Python-twitter](https://github.com/bear/python-twitter)
 * [Peewee Python ORM](https://github.com/coleifer/peewee)
@@ -31,9 +30,8 @@ Windows Explorer integration
 - Simple Context Menu
 	- Git Bash Here
 	- Git GUI Here
-
-Associate .git...
-Associate .sh....
+- Associate .git...
+- Associate .sh....
 
 Click next. Next again. Select run Git from the windows command prompt.
 
