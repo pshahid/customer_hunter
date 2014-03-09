@@ -8,3 +8,9 @@ access_secret = ""
 db = "social_consumer"
 user = "root"
 password = ""
+
+#Logging Configs
+filename = 'namethispls.log'
+level = 'DEBUG'
+format = '%(asctime)s %(message)s - '
+datefmt='%m/%d/%Y %I:%M:%S %p'

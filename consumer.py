@@ -2,6 +2,7 @@ import sys
 import time
 import string
 import datetime
+import logging
 from HTMLParser import HTMLParser
 from peewee import *
 from models import * 
@@ -13,19 +14,21 @@ dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 parser = HTMLParser()
 
 def main():
-    print sys.version
+    setup_logging()
     dbconn.connect()
     Tweet.create_table(fail_silently=True)
     # User.create_table(fail_silently=True)
 
-    print("Initializing the consumer...")
+    logging.debug("Initializing the consumer...")
+
     api = twitter.Api(\
         consumer_key=config.api_key,\
         consumer_secret=config.api_secret,\
         access_token_key=config.access_token, 
         access_token_secret=config.access_secret)
 
-    print("Verifying credentials.")
+    logging.debug("Verifying credentials.")
+
     user = api.VerifyCredentials()
 
     filters = [
@@ -36,10 +39,10 @@ def main():
         "sprint"
     ]
 
-    # bounding_box = ["-80.93,32.06", "-79.46,33.24"]
-    # bounding_box = ["-122.66,37.45","-122.03,38.01"]
+    #Charleston area bounding box
     bounding_box = ["-80.441697, 32.512679", "-79.614146, 33.590588"]
-    print("Filter set, creds verified, grabbing stream.")
+
+    logging.debug("Filter set, creds verified, grabbing stream.")
 
     start_time = time.time()
     stream = api.GetStreamFilter(locations=bounding_box)
@@ -57,7 +60,8 @@ def main():
                 msg = remove_all_tweet_urls(tweet)
                 msg = scrub(msg)
 
-                print tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg
+                logging.debug(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
+
                 new_tweet = Tweet(
                     message=msg,
                     created_date=date,
@@ -70,24 +74,37 @@ def main():
 
                 new_tweet.save()
     except StopIteration:
-        print("Stream can't move on.")
+        logging.critical("Stream can't move on.")
     except KeyboardInterrupt:
-        print("Keyboard Interrupt detected, exiting")
+        logging.critical("Keyboard Interrupt detected, exiting.")
     except InternalError as e:
-        print(e)
-        print("Encountered a tweet that likely had unicode.")
+        logging.error(e)
+        logging.error("Encountered a tweet that likely had unicode.")
 
 
 
     end_time = time.time()
     seconds = end_time - start_time
     minutes = (end_time - start_time) / 60.0
-    print "Total tweets: ", total_tweets
-    print "Seconds running: ", seconds
-    print "Minutes running: ", minutes
-    print "Tweets per minute: %d" % float(total_tweets / minutes)
+    logging.info("Total tweets: ", total_tweets)
+    logging.info("Seconds running: ", seconds)
+    logging.info("Minutes running: ", minutes)
+    logging.info("Tweets per minute: %d" % float(total_tweets / minutes))
 
     sys.exit(0)
+
+def setup_logging():
+    levels = {
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+        'WARN': logging.WARNING,
+        'ERROR': logging.ERROR
+        'CRIT': logging.CRITICAL
+    }
+
+    level = levels[config.level]
+
+    logging.basicConfig(filename=config.filename, level=level, format=config.format, datefmt=config.datefmt)
 
 '''
 Return given text with HTML parsed into normal UTF-16 and remove new lines. 
