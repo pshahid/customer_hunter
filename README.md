@@ -86,8 +86,7 @@ Extract that and then go inside of the folder and double click on the setup file
 
 After that you need to navigate to your Python scripts folder. Open up a command prompt in Windows and type in these commands:
 
-```
-!bash
+```bash
 
 cd C:\Python27\Scripts
 
@@ -106,8 +105,7 @@ Target location is C:\Python27\Scripts\python-twitter
 
 You should still have your command prompt ready. At this point do these commands:
 
-```
-!bash
+```bash
 
 dir
 
@@ -137,8 +135,7 @@ Target location: C:\Python27\Scripts\peewee
 
 From the command prompt, do these commands:
 
-```
-!bash
+```bash
 
 dir
 
