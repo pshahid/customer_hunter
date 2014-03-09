@@ -1,16 +1,19 @@
-import twitter
 import sys
 import time
-import datetime
+import string
+from datetime import datetime
+from HTMLParser import HTMLParser
 from peewee import *
 from models import * 
+import twitter
 import config
 
+
 dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
+parser = HTMLParser()
 
 def main():
     dbconn.connect()
-
     Tweet.create_table(fail_silently=True)
     # User.create_table(fail_silently=True)
 
@@ -34,11 +37,11 @@ def main():
 
     # bounding_box = ["-80.93,32.06", "-79.46,33.24"]
     # bounding_box = ["-122.66,37.45","-122.03,38.01"]
-
+    bounding_box = ["-80.441697, 32.512679", "-79.614146, 33.590588"]
     print("Filter set, creds verified, grabbing stream.")
 
     start_time = time.time()
-    stream = api.GetStreamFilter(track=filters)
+    stream = api.GetStreamFilter(locations=bounding_box)
     total_tweets = 0
 
     try:
@@ -50,53 +53,22 @@ def main():
                 total_tweets = total_tweets + 1
 
                 if tweet.get("lang", None) == "en":
-                    print tweet["text"]
-                    print
+                    date = parse_date(tweet.get('created_at'))
 
-                    if tweet.get('created_at') != None:
-                        #We have to split out the timezone because python doesn't support %z in 2.7
-                        tmp_time = tweet.get('created_at')
-                        time_split = tmp_time.split()
-                        new_time = time_split[0:-2]
-                        new_time.append(time_split[-1])
+                    msg = remove_all_tweet_urls(tweet.get('text'))
+                    msg = scrub(msg)
 
-                        #Turn it back into a string
-                        tmp_time = " ".join(new_time)
-                        time_conversion = datetime.datetime.strptime(tmp_time, '%a %b %d %H:%M:%S %Y')
-                    else:
-                        time_conversion = datetime.datetime.now()
-
-                    # message = scrub_message(tweet.get('text'))
-                    msg = tweet.get('text')
-                    if msg is not None:
-                        msg.replace("&amp;", "&")
-                        msg.replace("&lt;", "<")
-                        msg.replace("&gt;", ">")
-                        msg.replace("&quot;", '"')
-                        msg.replace("&#39;", "'")
-                        msg.replace("&#039", "'")
-                        msg.replace("\n", '')
-                        msg.replace("\r\n", '')
-
-                    my_tweet = Tweet(
+                    new_tweet = Tweet(
                         message=msg,
-                        created_date=time_conversion,
-                        twitter_id=tweet.get('id')
+                        created_date=date,
+                        twitter_id=tweet.get('id'),
+                        user=tweet.get('user').get('screen_name'),
+                        in_reply_to_screen_name=tweet.get('in_reply_to_screen_name'),
+                        in_reply_to_user_id=tweet.get('in_reply_to_user_id'),
+                        in_reply_to_status_id=tweet.get('in_reply_to_status_id')
                     )
 
-                    if tweet.get('user') != None:
-                        my_tweet.username = tweet.get('user').get('screen_name')
-
-                    if tweet.get('in_reply_to_screen_name') != None:
-                        my_tweet.in_reply_to_screen_name = tweet.get('in_reply_to_screen_name')
-
-                    if tweet.get('in_reply_to_user_id') != None:
-                        my_tweet.in_reply_to_user_id = tweet.get('in_reply_to_user_id')
-
-                    if tweet.get('in_reply_to_status_id') != None:
-                        my_tweet.in_reply_to_status_id = tweet.get('in_reply_to_status_id')
-
-                    my_tweet.save()
+                    new_tweet.save()
             else: 
                 print("Tweet is none")
     except StopIteration:
@@ -118,8 +90,52 @@ def main():
 
     sys.exit(0)
 
-def scrub_message(message):
-    return str(message)
+'''
+Return given text with HTML parsed into normal UTF-16 and remove new lines. 
+Raises a TypeError if argument text is None. Also removes punctuation.
+'''
+def scrub(text):
+    #Parse annoying HTML characters like &amp;
+    text = parser.unescape(text)
+
+    #Get rid of extra newlines & carriage returns and make whole thing lowercase
+    text = text.replace("\n", "").replace("\r", "").lower()
+    
+    #Get rid of punctuation
+    text = text.translate(string.maketrans("",""), string.punctuation)
+
+    return text
+
+'''
+Return given text with all URLs removed. Optional arguments start and length
+are the index where the URL starts and the length of the URL respectively. These help
+to more quickly remove the URL; use them when they are immediately available (Tweets).
+'''
+def remove_url(text, start=-1, length=-1):
+    if start > -1 and length > -1:
+        return text[0:start] + text[1 + start + length:]
+
+def remove_all_tweet_urls(tweet):
+    if "entities" in tweet:
+        text = tweet["text"]
+        urls = tweet["entities"]["urls"]
+
+        for url in urls:
+            text = remove_url(url["url"])
+
+    return text
+
+
+def parse_date(date):
+    if date != None:
+        #We have to take out the timezone because python doesn't support %z in 2.7
+        #Twitter's timezone will ALWAYS be +0000 for any created_at fields.
+        #This is not the case for other networks though!!
+        date = date.replace("+0000 ", "")
+
+        return datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
+    else:
+        return datetime.now()
 
 if __name__ == "__main__":
     main()
