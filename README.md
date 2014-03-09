@@ -1,7 +1,11 @@
 Customer Hunter
 ===============
 
-What do we do? We find customers on Twitter. Why? Because money and things. How? That's proprietary. When? Also proprietary. Where? Proprietary. 
+What do we do? We find customers on Twitter. 
+Why? Because money and things. 
+How? That's proprietary. 
+When? Also proprietary. 
+Where? Proprietary. 
 
 ### Installation
 
@@ -13,5 +17,4 @@ Things you'll need:
 * [Python-twitter](https://github.com/bear/python-twitter)
 * [Peewee Python ORM](https://github.com/coleifer/peewee)
 * [MySQL Database](http://dev.mysql.com/downloads/mysql/)
-
-
+* [MySQL Database Connector](http://dev.mysql.com/downloads/connector/python/)
