@@ -86,7 +86,7 @@ Extract that and then go inside of the folder and double click on the setup file
 
 After that you need to navigate to your Python scripts folder. Open up a command prompt in Windows and type in these commands:
 
-```bash
+```
 
 cd C:\Python27\Scripts
 
@@ -105,11 +105,11 @@ Target location is C:\Python27\Scripts\python-twitter
 
 You should still have your command prompt ready. At this point do these commands:
 
-```bash
+```
 
 dir
 
-//It should say C:\Python27\Scripts, if so, do the following commands, if not do cd C:\Python27\Scripts
+# It should say C:\Python27\Scripts, if so, do the following commands, if not do cd C:\Python27\Scripts
 
 pip install -r python-twitter\requirements.txt
 
@@ -135,11 +135,11 @@ Target location: C:\Python27\Scripts\peewee
 
 From the command prompt, do these commands:
 
-```bash
+```
 
 dir
 
-//It should still say C:\Python27\Scripts, if so do the following commands, if not do cd C:\Python27\Scripts
+# It should still say C:\Python27\Scripts, if so do the following commands, if not do cd C:\Python27\Scripts
 
 cd peewee
 setup.py install
