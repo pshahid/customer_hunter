@@ -73,13 +73,88 @@ Then download scikit. [here](www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-learn) c
 
 The installers for these should be really easy. Just keep clicking through until they're done.
 
+#### Installing Easy-install
+
+Install ez_setup.py: https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+
+Save that in your documents or wherever, just remember where you saved it. Once it's downloaded, go to it and double click on it. This should execute the file with Python. It should download a setuptools.zip folder. 
+
+Extract that and then go inside of the folder and double click on the setup file. This should install it.
+
+
+#### Installing Pip
+
+After that you need to navigate to your Python scripts folder. Open up a command prompt in Windows and type in these commands:
+
+```
+!bash
+
+cd C:\Python27\Scripts
+
+easy_install pip
+
+```
+
+Keep your command prompt up, you'll need it right there again.
+
 #### Installing Python-twitter
 
 Start up your git gui, it should be in your start menu now. Click on 'clone an existing repository'.
 
-Source location is 'https://github.com/bear/python-twitter'
-Target location is
+Source location is https://github.com/bear/python-twitter
+Target location is C:\Python27\Scripts\python-twitter
 
+You should still have your command prompt ready. At this point do these commands:
 
-Once you've installed Git, Python, MySQL, and Scikit, you'll need to install both Python-twitter and Peewee from Github. This is relatively simple, but 
-you'll be on Windows, so I'm not sure exactly 
+```
+!bash
+
+dir
+
+//It should say C:\Python27\Scripts, if so, do the following commands, if not do cd C:\Python27\Scripts
+
+pip install -r python-twitter\requirements.txt
+
+cd python-twitter
+
+setup.py build
+
+setup.py install
+
+cd ..
+```
+
+This should mean that python-twitter is installed by now (it'll error out if not). If it's not you're a little screwed up and you need to let me know. 
+
+Keep command prompt up.
+
+#### Installing Peewee
+
+Start up the git gui again and click on clone existing repo.
+
+Source location: https://github.com/coleifer/peewee
+Target location: C:\Python27\Scripts\peewee
+
+From the command prompt, do these commands:
+
+```
+!bash
+
+dir
+
+//It should still say C:\Python27\Scripts, if so do the following commands, if not do cd C:\Python27\Scripts
+
+cd peewee
+setup.py install
+```
+
+You can close your command prompt.
+
+#### Installing customer-hunter
+
+Finally, if everything has gone well, which I hope it has, then you're ready to install our app. Crack open the git gui again and click on clone existing repo.
+
+Source location: http://github.com/pshahid/customer-hunter
+
+The target location is your desktop this time.
+Target location: C:\Path\To\Your\Desktop  
