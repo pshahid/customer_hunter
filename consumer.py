@@ -48,29 +48,25 @@ def main():
         tweet = None
         while True:
             tweet = stream.next()
+            total_tweets = total_tweets + 1
 
-            if tweet:
-                total_tweets = total_tweets + 1
+            if tweet.get("lang", None) == "en":
+                date = parse_date(tweet.get('created_at'))
 
-                if tweet.get("lang", None) == "en":
-                    date = parse_date(tweet.get('created_at'))
+                msg = remove_all_tweet_urls(tweet.get('text'))
+                msg = scrub(msg)
 
-                    msg = remove_all_tweet_urls(tweet.get('text'))
-                    msg = scrub(msg)
+                new_tweet = Tweet(
+                    message=msg,
+                    created_date=date,
+                    twitter_id=tweet.get('id'),
+                    user=tweet.get('user').get('screen_name'),
+                    in_reply_to_screen_name=tweet.get('in_reply_to_screen_name'),
+                    in_reply_to_user_id=tweet.get('in_reply_to_user_id'),
+                    in_reply_to_status_id=tweet.get('in_reply_to_status_id')
+                )
 
-                    new_tweet = Tweet(
-                        message=msg,
-                        created_date=date,
-                        twitter_id=tweet.get('id'),
-                        user=tweet.get('user').get('screen_name'),
-                        in_reply_to_screen_name=tweet.get('in_reply_to_screen_name'),
-                        in_reply_to_user_id=tweet.get('in_reply_to_user_id'),
-                        in_reply_to_status_id=tweet.get('in_reply_to_status_id')
-                    )
-
-                    new_tweet.save()
-            else: 
-                print("Tweet is none")
+                new_tweet.save()
     except StopIteration:
         print("Stream can't move on.")
     except KeyboardInterrupt:
