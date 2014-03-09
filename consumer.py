@@ -3,6 +3,7 @@ import time
 import string
 import datetime
 import logging
+import re
 from HTMLParser import HTMLParser
 from peewee import *
 from models import * 
@@ -60,7 +61,11 @@ def main():
                 msg = remove_all_tweet_urls(tweet)
                 msg = scrub(msg)
 
-                logging.debug(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
+                if "in_reply_to_status_id_str" != None and "entities" in tweet:
+                    if len(tweet["entities"]["urls"]) > 0:
+                        print tweet
+
+                logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
 
                 new_tweet = Tweet(
                     message=msg,
@@ -86,9 +91,8 @@ def main():
     end_time = time.time()
     seconds = end_time - start_time
     minutes = (end_time - start_time) / 60.0
-    logging.info("Total tweets: ", total_tweets)
-    logging.info("Seconds running: ", seconds)
-    logging.info("Minutes running: ", minutes)
+    logging.info("Total tweets: %d"  % total_tweets)
+    logging.info("Minutes running: %d" % minutes)
     logging.info("Tweets per minute: %d" % float(total_tweets / minutes))
 
     sys.exit(0)
@@ -98,7 +102,7 @@ def setup_logging():
         'DEBUG': logging.DEBUG,
         'INFO': logging.INFO,
         'WARN': logging.WARNING,
-        'ERROR': logging.ERROR
+        'ERROR': logging.ERROR,
         'CRIT': logging.CRITICAL
     }
 
@@ -111,18 +115,27 @@ Return given text with HTML parsed into normal UTF-16 and remove new lines.
 Raises a TypeError if argument text is None. Also removes punctuation.
 '''
 def scrub(text):
-    #Parse annoying HTML characters like &amp;
     try:
+        #Parse annoying HTML characters like &amp;
         text = parser.unescape(text)
 
-        #Get rid of extra newlines & carriage returns and make whole thing lowercase
+        #Remove extra newlines & carriage returns and make whole thing lowercase
         text = text.replace("\n", "").replace("\r", "").lower()
         
-        #Get rid of punctuation
-        text = text.translate(string.punctuation)
+        #Remove all punctuation except those in ignore
+        ignore = ("@", "#", "/")
+        for punct in string.punctuation:
+            if punct not in ignore:
+                text = text.replace(punct, "")
+
+        #Remove non-ascii chars (emoticons and shit)
+        text = "".join(c if ord(c) < 128 else "" for c in text)
+
+        #Remove excess space
+        text = re.sub("(\s+)", " ", text)
     except TypeError as te:
-        print te
-        print text
+        logging.error(te)
+        logging.error(text)
 
     return text
 
