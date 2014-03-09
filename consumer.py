@@ -61,10 +61,6 @@ def main():
                 msg = remove_all_tweet_urls(tweet)
                 msg = scrub(msg)
 
-                if "in_reply_to_status_id_str" != None and "entities" in tweet:
-                    if len(tweet["entities"]["urls"]) > 0:
-                        print tweet
-
                 logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
 
                 new_tweet = Tweet(
