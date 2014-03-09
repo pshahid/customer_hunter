@@ -1,7 +1,7 @@
 import sys
 import time
 import string
-from datetime import datetime
+import datetime
 from HTMLParser import HTMLParser
 from peewee import *
 from models import * 
@@ -13,6 +13,7 @@ dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 parser = HTMLParser()
 
 def main():
+    print sys.version
     dbconn.connect()
     Tweet.create_table(fail_silently=True)
     # User.create_table(fail_silently=True)
@@ -53,14 +54,15 @@ def main():
             if tweet.get("lang", None) == "en":
                 date = parse_date(tweet.get('created_at'))
 
-                msg = remove_all_tweet_urls(tweet.get('text'))
+                msg = remove_all_tweet_urls(tweet)
                 msg = scrub(msg)
 
+                print tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg
                 new_tweet = Tweet(
                     message=msg,
                     created_date=date,
                     twitter_id=tweet.get('id'),
-                    user=tweet.get('user').get('screen_name'),
+                    username=tweet.get('user').get('screen_name'),
                     in_reply_to_screen_name=tweet.get('in_reply_to_screen_name'),
                     in_reply_to_user_id=tweet.get('in_reply_to_user_id'),
                     in_reply_to_status_id=tweet.get('in_reply_to_status_id')
@@ -71,7 +73,8 @@ def main():
         print("Stream can't move on.")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected, exiting")
-    except InternalError:
+    except InternalError as e:
+        print(e)
         print("Encountered a tweet that likely had unicode.")
 
 
@@ -92,13 +95,17 @@ Raises a TypeError if argument text is None. Also removes punctuation.
 '''
 def scrub(text):
     #Parse annoying HTML characters like &amp;
-    text = parser.unescape(text)
+    try:
+        text = parser.unescape(text)
 
-    #Get rid of extra newlines & carriage returns and make whole thing lowercase
-    text = text.replace("\n", "").replace("\r", "").lower()
-    
-    #Get rid of punctuation
-    text = text.translate(string.maketrans("",""), string.punctuation)
+        #Get rid of extra newlines & carriage returns and make whole thing lowercase
+        text = text.replace("\n", "").replace("\r", "").lower()
+        
+        #Get rid of punctuation
+        text = text.translate(string.punctuation)
+    except TypeError as te:
+        print te
+        print text
 
     return text
 
@@ -107,17 +114,25 @@ Return given text with all URLs removed. Optional arguments start and length
 are the index where the URL starts and the length of the URL respectively. These help
 to more quickly remove the URL; use them when they are immediately available (Tweets).
 '''
-def remove_url(text, start=-1, length=-1):
-    if start > -1 and length > -1:
-        return text[0:start] + text[1 + start + length:]
+def remove_url(text, lindex=-1, rindex=-1):
+    if lindex > -1 and rindex > -1:
+        return text[0:lindex] + text[rindex:]
+    else:
+        raise NotImplementedError("remove_url currently requires 3 arguments, 1 given.")
 
 def remove_all_tweet_urls(tweet):
+    text = tweet["text"]
+
     if "entities" in tweet:
-        text = tweet["text"]
+        #Strangely, URLs will always be there, but media won't
         urls = tweet["entities"]["urls"]
 
         for url in urls:
-            text = remove_url(url["url"])
+            text = remove_url(text, url["indices"][0], url["indices"][1])
+
+        if "media" in tweet["entities"]:
+            for media in tweet["entities"]["media"]:
+                text = remove_url(text, media["indices"][0], media["indices"][1])
 
     return text
 
@@ -129,9 +144,9 @@ def parse_date(date):
         #This is not the case for other networks though!!
         date = date.replace("+0000 ", "")
 
-        return datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
+        return datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
     else:
-        return datetime.now()
+        return datetime.datetime.now()
 
 if __name__ == "__main__":
     main()
