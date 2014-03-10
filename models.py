@@ -22,3 +22,8 @@ class Tweet(MySQLModel):
 	longitude = DoubleField(null=True)
 	username = CharField()
 
+class Prediction(MySQLModel):
+	tweet = ForeignKeyField(db_column='tweet_id', rel_model=Tweet, null=True)
+	svc = IntegerField(default=0, null=False)
+	sgd = IntegerField(default=0, null=False)
+	logit = IntegerField(default=0, null=False)

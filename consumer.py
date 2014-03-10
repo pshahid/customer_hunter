@@ -5,33 +5,40 @@ import datetime
 import logging
 import re
 from HTMLParser import HTMLParser
-from peewee import *
-from models import * 
 import twitter
-import config
 
-
-dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 parser = HTMLParser()
 
-def main():
-    setup_logging()
-    dbconn.connect()
-    Tweet.create_table(fail_silently=True)
-    # User.create_table(fail_silently=True)
+'''
+Callback is the function passed whenever a new tweet is inserted into the database.
+'''
+class TwitterConsumer(object):
+    def __init__(self, api_kwargs, callback, filters=None, bounding_box=None):
+        self.api_kwargs = api_kwargs    #Must be a dict of api kwargs
+        self.user = None
+        self.filters = filters
+        self.bounding_box = bounding_box
 
-    logging.debug("Initializing the consumer...")
+        self.api = twitter.Api(\
+            consumer_key=api_kwargs['api_key'],\
+            consumer_secret=api_kwargs['api_secret'],\
+            access_token_key=api_kwargs['access_key'],\
+            access_token_secret=api_kwargs['access_secret'])        
 
-    api = twitter.Api(\
-        consumer_key=config.api_key,\
-        consumer_secret=config.api_secret,\
-        access_token_key=config.access_token, 
-        access_token_secret=config.access_secret)
+    def start(self):
+        logging.debug("Starting TwitterConsumer.")
 
-    logging.debug("Verifying credentials.")
+        api = twitter.Api(\
+            consumer_key=self.api_kwargs['api_key'],\
+            consumer_secret=self.api_kwargs['api_secret'],\
+            access_token_key=self.api_kwargs['access_key'],\
+            access_token_secret=self.api_kwargs['access_secret'])
 
-    user = api.VerifyCredentials()
+        logging.debug("Verifying credentials.")
 
+        self.user = api.VerifyCredentials()
+
+def consume():
     filters = [
         "verizon",
         "tmobile",
@@ -74,6 +81,7 @@ def main():
                 )
 
                 new_tweet.save()
+
     except StopIteration:
         logging.critical("Stream can't move on.")
     except KeyboardInterrupt:
@@ -81,8 +89,6 @@ def main():
     except InternalError as e:
         logging.error(e)
         logging.error("Encountered a tweet that likely had unicode.")
-
-
 
     end_time = time.time()
     seconds = end_time - start_time
@@ -92,19 +98,6 @@ def main():
     logging.info("Tweets per minute: %d" % float(total_tweets / minutes))
 
     sys.exit(0)
-
-def setup_logging():
-    levels = {
-        'DEBUG': logging.DEBUG,
-        'INFO': logging.INFO,
-        'WARN': logging.WARNING,
-        'ERROR': logging.ERROR,
-        'CRIT': logging.CRITICAL
-    }
-
-    level = levels[config.level]
-
-    logging.basicConfig(filename=config.filename, level=level, format=config.format, datefmt=config.datefmt)
 
 '''
 Return given text with HTML parsed into normal UTF-16 and remove new lines. 
@@ -175,4 +168,4 @@ def parse_date(date):
         return datetime.datetime.now()
 
 if __name__ == "__main__":
-    main()
+    consume()
