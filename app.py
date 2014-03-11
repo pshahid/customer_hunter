@@ -93,6 +93,8 @@ if __name__ == "__main__":
         if app:
             app.stop()
         sys.exit(0)
-    except Exception as e:
+    except:
         logging.warning(sys.exc_info()[0])
+        app.stop()
+        sys.ext(0)
         raise
