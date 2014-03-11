@@ -96,5 +96,4 @@ if __name__ == "__main__":
     except:
         logging.warning(sys.exc_info()[0])
         app.stop()
-        sys.ext(0)
-        raise
+        sys.exit(0)
