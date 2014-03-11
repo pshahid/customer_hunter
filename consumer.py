@@ -45,7 +45,7 @@ class TwitterConsumer(object):
             #Choose between a locations-based or filters-based consumer.
             #It should not appear any different outwardly
             if self.locations is None:
-                self.stream = self.api.GetStreamFilter(tracks=filters)
+                self.stream = self.api.GetStreamFilter(track=self.filters)
                 self.consumer_context = FilterConsumer()
             else:
                 self.stream = self.api.GetStreamFilter(locations=self.locations)

@@ -4,12 +4,18 @@ from peewee import *
 from models import * 
 import config
 from consumer import TwitterConsumer
+from modeler import Modeler
 
 dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 
 class App(object):
-    def __init__(self):
+    def __init__(self, modeler=None):
         self.consumer = None
+
+        if modeler is not None:
+            self.modeler = modeler
+        else:
+            self.modeler = None
 
     def start(self):
         self._setup_logging()
@@ -34,13 +40,13 @@ class App(object):
             'access_key': config.access_token,
             'access_secret': config.access_secret
         }
-        self.consumer = TwitterConsumer(api_kwargs, bounding_box=bounding_box)
+        self.consumer = TwitterConsumer(api_kwargs, filters=filters)
         self.consumer.start()
 
         while True:
             tweet = self.consumer.consume()
             if tweet is not None:
-                #Creates and saves the tweet in the DB
+                #Creates the Tweet model and prepares it to be saved in the DB
                 new_tweet = Tweet(\
                     message=tweet['message'],\
                     created_date=tweet['created_date'],\
@@ -51,28 +57,39 @@ class App(object):
                     in_reply_to_status_id=tweet['in_reply_to_status_id']
                 )
 
-                new_tweet.save()
+                if self.modeler is not None:
+                    predictions = self.modeler.predict([tweet['message']])
 
+                    new_tweet.logit_prediction = int(predictions['logit'][0])
+                    new_tweet.sgd_prediction = int(predictions['sgd'][0])
+
+                new_tweet.save()
 
     def stop(self):
         self.consumer.stop()
 
     def _setup_logging(self):
-        levels = {
-            'DEBUG': logging.DEBUG,
-            'INFO': logging.INFO,
-            'WARN': logging.WARNING,
-            'ERROR': logging.ERROR,
-            'CRIT': logging.CRITICAL
-        }
+        # levels = {
+        #     'DEBUG': logging.DEBUG,
+        #     'INFO': logging.INFO,
+        #     'WARN': logging.WARNING,
+        #     'ERROR': logging.ERROR,
+        #     'CRIT': logging.CRITICAL
+        # }
 
-        level = levels[config.level]
-        logging.basicConfig(filename=config.filename, level=level, format=config.format, datefmt=config.datefmt)
+        # level = levels[config.level]
+        logging.basicConfig(filename='consumer.log', format='%(asctime)s - %(message)s ', datefmt=config.datefmt)
+
+        logging.info("ERRRORRRRR")
 
 if __name__ == "__main__":
     app = None
+
     try:
-        app = App()
+        modeler = Modeler(config.training, config.test)
+        modeler.load_training()
+        modeler.load_test()
+        app = App(modeler=modeler)
         app.start()
     except KeyboardInterrupt:
         if app:
