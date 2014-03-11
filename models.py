@@ -1,5 +1,5 @@
 from peewee import *
-from core import dbconn
+from app import dbconn
 import datetime
 
 class MySQLModel(Model):
