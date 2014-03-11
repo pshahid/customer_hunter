@@ -13,9 +13,8 @@ parser = HTMLParser()
 Callback is the function passed whenever a new tweet is inserted into the database.
 '''
 class TwitterConsumer(object):
-    def __init__(self, api_kwargs, callback, filters=None, bounding_box=None):
+    def __init__(self, api_kwargs, filters=None, bounding_box=None):
         self.api_kwargs = api_kwargs    #Must be a dict of api kwargs
-        self.callback = callback        #Must be a function that implements **kwargs
         self.started = False
         self.user = None
         self.filters = filters
@@ -33,7 +32,7 @@ class TwitterConsumer(object):
         self.tweet_count = 0
 
     def start(self):
-        logging.debug("Starting TwitterConsumer.")
+        logging.info("Starting TwitterConsumer.")
 
         if self.started is False:
             self.started = True
@@ -41,15 +40,15 @@ class TwitterConsumer(object):
             self.start_time = time.time()
             self.tweet_count = 0
             logging.debug("Verifying credentials.")
-            self.user = api.VerifyCredentials()
+            self.user = self.api.VerifyCredentials()
 
             #Choose between a locations-based or filters-based consumer.
             #It should not appear any different outwardly
             if self.locations is None:
-                self.stream = api.GetStreamFilter(tracks=filters)
+                self.stream = self.api.GetStreamFilter(tracks=filters)
                 self.consumer_context = FilterConsumer()
             else:
-                self.stream = api.GetStreamFilter(locations=self.locations)
+                self.stream = self.api.GetStreamFilter(locations=self.locations)
                 self.consumer_context = LocationConsumer(self.filters)
 
             logging.info("TwitterConsumer has started ingesting data stream.")
@@ -77,6 +76,7 @@ class TwitterConsumer(object):
         self.start()
 
     def consume(self):
+        self.tweet_count += 1
         return self.consumer_context.consume(self.stream)
 
 class ConsumerStrategy(object):
@@ -153,32 +153,15 @@ class ConsumerStrategy(object):
         else:
             raise NotImplementedError("remove_url currently requires 3 arguments, 1 given.")
 
-    def _save_tweet(self, **tweet):
-        # new_tweet = Tweet(
-        #     message=msg,
-        #     created_date=date,
-        #     twitter_id=tweet.get('id'),
-        #     username=tweet.get('user').get('screen_name'),
-        #     in_reply_to_screen_name=tweet.get('in_reply_to_screen_name'),
-        #     in_reply_to_user_id=tweet.get('in_reply_to_user_id'),
-        #     in_reply_to_status_id=tweet.get('in_reply_to_status_id')
-        # )
-        new_tweet = Tweet(**tweet)
-        new_tweet.save()
-
-        return new_tweet
-
 class LocationConsumer(ConsumerStrategy):
 
     def __init__(self, filters, filter_fn=None):
         super(LocationConsumer, self).__init__()
 
-        if self.filters is not None:
+        if filters is not None:
             self.filters = [f.lower() for f in filters]
         else:
             self.filters = []
-
-        self.locations = location
 
         if filter_fn is not None:
             self.filter_fn = filter_fn
@@ -213,7 +196,7 @@ class LocationConsumer(ConsumerStrategy):
             }
 
             if self.filter_fn(msg):
-                return self._save_tweet(**new_tweet)
+                return new_tweet
 
         return None
 
@@ -222,11 +205,13 @@ class LocationConsumer(ConsumerStrategy):
     already, and the filters are not case sensitive.
     '''
     def _apply_filter(self, sentence):
-        for f in self.filters:
-            if f in sentence:
-                return True
-
-        return False
+        if len(self.filters) > 0:
+            for f in self.filters:
+                if f in sentence:
+                    return True
+            return False
+        else:
+            return True
 
 class FilterConsumer(ConsumerStrategy):
     def __init__(self):
@@ -256,6 +241,6 @@ class FilterConsumer(ConsumerStrategy):
                 'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
             }
 
-            return self._save_tweet(**new_tweet)
+            return new_tweet
 
         return None
