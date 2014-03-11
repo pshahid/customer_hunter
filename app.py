@@ -39,13 +39,22 @@ class App(object):
         self.consumer.start()
 
         while True:
-            tweet = self.consumer.consume()  #This is where we'd send tweets off to be predicted!
-            # if tweet is not None:
-                # Do things
-                # print tweet
-            # new_tweet = Tweet(**tweet)
-            # new_tweet.save()
-            # print new_tweet.id
+            tweet = self.consumer.consume()
+
+            if tweet is not None:
+                #Creates and saves the tweet in the DB
+                new_tweet = Tweet(\
+                    message=tweet['message'],\
+                    created_date=tweet['created_date'],\
+                    twitter_id=tweet['twitter_id'], \
+                    username=tweet['username'], \
+                    in_reply_to_screen_name=tweet['in_reply_to_screen_name'],\
+                    in_reply_to_user_id=tweet['in_reply_to_user_id'],\
+                    in_reply_to_status_id=tweet['in_reply_to_status_id']
+                )
+
+                new_tweet.save()
+
 
     def stop(self):
         self.consumer.stop()
