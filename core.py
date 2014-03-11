@@ -22,7 +22,6 @@ def setup_logging():
     }
 
     level = levels[config.level]
-
     logging.basicConfig(filename=config.filename, level=level, format=config.format, datefmt=config.datefmt)
 
 if __name__ == "__main__"

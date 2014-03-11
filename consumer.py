@@ -15,157 +15,247 @@ Callback is the function passed whenever a new tweet is inserted into the databa
 class TwitterConsumer(object):
     def __init__(self, api_kwargs, callback, filters=None, bounding_box=None):
         self.api_kwargs = api_kwargs    #Must be a dict of api kwargs
+        self.callback = callback        #Must be a function that implements **kwargs
+        self.started = False
         self.user = None
         self.filters = filters
-        self.bounding_box = bounding_box
+        self.locations = bounding_box
 
         self.api = twitter.Api(\
             consumer_key=api_kwargs['api_key'],\
             consumer_secret=api_kwargs['api_secret'],\
             access_token_key=api_kwargs['access_key'],\
-            access_token_secret=api_kwargs['access_secret'])        
+            access_token_secret=api_kwargs['access_secret'])
+
+        
+        self.stream = None
+        self.consumer_context = None
+        self.tweet_count = 0
 
     def start(self):
         logging.debug("Starting TwitterConsumer.")
 
-        api = twitter.Api(\
-            consumer_key=self.api_kwargs['api_key'],\
-            consumer_secret=self.api_kwargs['api_secret'],\
-            access_token_key=self.api_kwargs['access_key'],\
-            access_token_secret=self.api_kwargs['access_secret'])
+        if self.started is False:
+            self.started = True
 
-        logging.debug("Verifying credentials.")
+            self.start_time = time.time()
+            self.tweet_count = 0
+            logging.debug("Verifying credentials.")
+            self.user = api.VerifyCredentials()
 
-        self.user = api.VerifyCredentials()
+            #Choose between a locations-based or filters-based consumer.
+            #It should not appear any different outwardly
+            if self.locations is None:
+                self.stream = api.GetStreamFilter(tracks=filters)
+                self.consumer_context = FilterConsumer()
+            else:
+                self.stream = api.GetStreamFilter(locations=self.locations)
+                self.consumer_context = LocationConsumer(self.filters)
 
-def consume():
-    filters = [
-        "verizon",
-        "tmobile",
-        "t-mobile",
-        "at&t",
-        "sprint"
-    ]
+            logging.info("TwitterConsumer has started ingesting data stream.")
 
-    #Charleston area bounding box
-    bounding_box = ["-80.441697, 32.512679", "-79.614146, 33.590588"]
+        else:
+            logging.info("TwitterConsumer already started.")
 
-    logging.debug("Filter set, creds verified, grabbing stream.")
+    def stop(self):
+        self.started = False
+        self.stream = None
+        self.user = None
+        self.api = None
+        self.end_time = time.time()
+        seconds = self.end_time - self.start_time
+        minutes = (self.end_time - self.start_time) / 60.0
 
-    start_time = time.time()
-    stream = api.GetStreamFilter(locations=bounding_box)
-    total_tweets = 0
+        logging.info("Total tweets: %d"  % self.tweet_count)
+        logging.info("Minutes running: %d" % minutes)
+        logging.info("Tweets per minute: %d" % float(self.tweet_count / minutes))
 
-    try:
-        tweet = None
-        while True:
-            tweet = stream.next()
-            total_tweets = total_tweets + 1
+        logging.info("TwitterConsumer has stopped.")
 
-            if tweet.get("lang", None) == "en":
-                date = parse_date(tweet.get('created_at'))
+    def restart(self):
+        self.stop()
+        self.start()
 
-                msg = remove_all_tweet_urls(tweet)
-                msg = scrub(msg)
+    def consume(self):
+        return self.consumer_context.consume(self.stream)
 
-                logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
+class ConsumerStrategy(object):
+    def __init__(self):
+        pass
 
-                new_tweet = Tweet(
-                    message=msg,
-                    created_date=date,
-                    twitter_id=tweet.get('id'),
-                    username=tweet.get('user').get('screen_name'),
-                    in_reply_to_screen_name=tweet.get('in_reply_to_screen_name'),
-                    in_reply_to_user_id=tweet.get('in_reply_to_user_id'),
-                    in_reply_to_status_id=tweet.get('in_reply_to_status_id')
-                )
+    def consume(self, stream):
+        raise NotImplementedError("ConsumerStrategy has not implemented consume. This class hasn't been subclassed.")
 
-                new_tweet.save()
+    '''
+    Return given text with HTML parsed into normal UTF-16 and remove new lines. 
+    Raises a TypeError if argument text is None. Also removes punctuation.
+    '''
+    def _scrub(self, text):
+        try:
+            #Parse annoying HTML characters like &amp;
+            text = parser.unescape(text)
 
-    except StopIteration:
-        logging.critical("Stream can't move on.")
-    except KeyboardInterrupt:
-        logging.critical("Keyboard Interrupt detected, exiting.")
-    except InternalError as e:
-        logging.error(e)
-        logging.error("Encountered a tweet that likely had unicode.")
+            #Remove extra newlines & carriage returns and make whole thing lowercase
+            text = text.replace("\n", "").replace("\r", "").lower()
+            
+            #Remove all punctuation except those in ignore
+            ignore = ("@", "#", "/")
+            for punct in string.punctuation:
+                if punct not in ignore:
+                    text = text.replace(punct, "")
 
-    end_time = time.time()
-    seconds = end_time - start_time
-    minutes = (end_time - start_time) / 60.0
-    logging.info("Total tweets: %d"  % total_tweets)
-    logging.info("Minutes running: %d" % minutes)
-    logging.info("Tweets per minute: %d" % float(total_tweets / minutes))
+            #Remove non-ascii chars (emoticons and shit)
+            text = "".join(c if ord(c) < 128 else "" for c in text)
 
-    sys.exit(0)
+            #Remove excess space
+            text = re.sub("(\s+)", " ", text)
+        except TypeError as te:
+            logging.error(te)
+            logging.error(text)
 
-'''
-Return given text with HTML parsed into normal UTF-16 and remove new lines. 
-Raises a TypeError if argument text is None. Also removes punctuation.
-'''
-def scrub(text):
-    try:
-        #Parse annoying HTML characters like &amp;
-        text = parser.unescape(text)
+        return text
 
-        #Remove extra newlines & carriage returns and make whole thing lowercase
-        text = text.replace("\n", "").replace("\r", "").lower()
-        
-        #Remove all punctuation except those in ignore
-        ignore = ("@", "#", "/")
-        for punct in string.punctuation:
-            if punct not in ignore:
-                text = text.replace(punct, "")
+    def _parse_date(self, date):
+        if date != None:
+            #We have to take out the timezone because python doesn't support %z in 2.7
+            #Twitter's timezone will ALWAYS be +0000 for any created_at fields.
+            #This is not the case for other networks though!!
+            date = date.replace("+0000 ", "")
 
-        #Remove non-ascii chars (emoticons and shit)
-        text = "".join(c if ord(c) < 128 else "" for c in text)
+            return datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
+        else:
+            return datetime.datetime.now()
 
-        #Remove excess space
-        text = re.sub("(\s+)", " ", text)
-    except TypeError as te:
-        logging.error(te)
-        logging.error(text)
+    def _remove_all_tweet_urls(self, tweet):
+        text = tweet["text"]
 
-    return text
+        if "entities" in tweet:
+            #Strangely, URLs will always be there, but media won't
+            urls = tweet["entities"]["urls"]
 
-'''
-Return given text with all URLs removed. Optional arguments start and length
-are the index where the URL starts and the length of the URL respectively. These help
-to more quickly remove the URL; use them when they are immediately available (Tweets).
-'''
-def remove_url(text, lindex=-1, rindex=-1):
-    if lindex > -1 and rindex > -1:
-        return text[0:lindex] + text[rindex:]
-    else:
-        raise NotImplementedError("remove_url currently requires 3 arguments, 1 given.")
+            for url in urls:
+                text = self._remove_url(text, url["indices"][0], url["indices"][1])
 
-def remove_all_tweet_urls(tweet):
-    text = tweet["text"]
+            if "media" in tweet["entities"]:
+                for media in tweet["entities"]["media"]:
+                    text = self._remove_url(text, media["indices"][0], media["indices"][1])
 
-    if "entities" in tweet:
-        #Strangely, URLs will always be there, but media won't
-        urls = tweet["entities"]["urls"]
+        return text
 
-        for url in urls:
-            text = remove_url(text, url["indices"][0], url["indices"][1])
+    '''
+    Return given text with all URLs removed. Optional arguments start and length
+    are the index where the URL starts and the length of the URL respectively. These help
+    to more quickly remove the URL; use them when they are immediately available (Tweets).
+    '''
+    def _remove_url(self, text, lindex=-1, rindex=-1):
+        if lindex > -1 and rindex > -1:
+            return text[0:lindex] + text[rindex:]
+        else:
+            raise NotImplementedError("remove_url currently requires 3 arguments, 1 given.")
 
-        if "media" in tweet["entities"]:
-            for media in tweet["entities"]["media"]:
-                text = remove_url(text, media["indices"][0], media["indices"][1])
+    def _save_tweet(self, **tweet):
+        # new_tweet = Tweet(
+        #     message=msg,
+        #     created_date=date,
+        #     twitter_id=tweet.get('id'),
+        #     username=tweet.get('user').get('screen_name'),
+        #     in_reply_to_screen_name=tweet.get('in_reply_to_screen_name'),
+        #     in_reply_to_user_id=tweet.get('in_reply_to_user_id'),
+        #     in_reply_to_status_id=tweet.get('in_reply_to_status_id')
+        # )
+        new_tweet = Tweet(**tweet)
+        new_tweet.save()
 
-    return text
+        return new_tweet
 
+class LocationConsumer(ConsumerStrategy):
 
-def parse_date(date):
-    if date != None:
-        #We have to take out the timezone because python doesn't support %z in 2.7
-        #Twitter's timezone will ALWAYS be +0000 for any created_at fields.
-        #This is not the case for other networks though!!
-        date = date.replace("+0000 ", "")
+    def __init__(self, filters, filter_fn=None):
+        super(LocationConsumer, self).__init__()
 
-        return datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
-    else:
-        return datetime.datetime.now()
+        if self.filters is not None:
+            self.filters = [f.lower() for f in filters]
+        else:
+            self.filters = []
 
-if __name__ == "__main__":
-    consume()
+        self.locations = location
+
+        if filter_fn is not None:
+            self.filter_fn = filter_fn
+        else:
+            self.filter_fn = self._apply_filter
+
+    '''
+    Returns a Tweet model if the message passes the applied filter
+    '''
+    def consume(self, stream):
+        tweet = stream.next()
+
+        if tweet == None:
+            raise TypeError("Expected a JSON object from stream, got None instead.")
+
+        if tweet.get("lang", None) == "en":
+            date = self._parse_date(tweet.get('created_at'))
+
+            msg = self._remove_all_tweet_urls(tweet)
+            msg = self._scrub(msg)
+
+            logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
+
+            new_tweet = {
+                'message': msg,
+                'created_date': date,
+                'twitter_id': tweet.get('id'), 
+                'username': tweet.get('user').get('screen_name'),
+                'in_reply_to_screen_name': tweet.get('in_reply_to_screen_name'),
+                'in_reply_to_user_id': tweet.get('in_reply_to_user_id'),
+                'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
+            }
+
+            if self.filter_fn(msg):
+                return self._save_tweet(**new_tweet)
+
+        return None
+
+    '''
+    Returns true if any of filters is in sentence. This sentence is assumed to have been scrubbed
+    already, and the filters are not case sensitive.
+    '''
+    def _apply_filter(self, sentence):
+        for f in self.filters:
+            if f in sentence:
+                return True
+
+        return False
+
+class FilterConsumer(ConsumerStrategy):
+    def __init__(self):
+        super(FilterConsumer, self).__init__()
+
+    def consume(self, stream):
+        tweet = stream.next()
+
+        if tweet == None:
+            raise TypeError("Expected a JSON object from stream, got None instead.")
+
+        if tweet.get("lang", None) == "en":
+            date = self._parse_date(tweet.get('created_at'))
+
+            msg = self._remove_all_tweet_urls(tweet)
+            msg = self._scrub(msg)
+
+            logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
+
+            new_tweet = {
+                'message': msg,
+                'created_date': date,
+                'twitter_id': tweet.get('id'), 
+                'username': tweet.get('user').get('screen_name'),
+                'in_reply_to_screen_name': tweet.get('in_reply_to_screen_name'),
+                'in_reply_to_user_id': tweet.get('in_reply_to_user_id'),
+                'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
+            }
+
+            return self._save_tweet(**new_tweet)
+
+        return None
