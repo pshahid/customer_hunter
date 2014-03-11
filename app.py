@@ -35,12 +35,10 @@ class App(object):
             'access_secret': config.access_secret
         }
         self.consumer = TwitterConsumer(api_kwargs, bounding_box=bounding_box)
-
         self.consumer.start()
 
         while True:
             tweet = self.consumer.consume()
-
             if tweet is not None:
                 #Creates and saves the tweet in the DB
                 new_tweet = Tweet(\
