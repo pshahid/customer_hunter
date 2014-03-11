@@ -78,9 +78,7 @@ class App(object):
         # }
 
         # level = levels[config.level]
-        logging.basicConfig(filename='consumer.log', format='%(asctime)s - %(message)s ', datefmt=config.datefmt)
-
-        logging.info("ERRRORRRRR")
+        logging.basicConfig(level=logging.INFO, filename='consumer.log', format='%(asctime)s - %(message)s ', datefmt=config.datefmt)
 
 if __name__ == "__main__":
     app = None

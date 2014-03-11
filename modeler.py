@@ -1,5 +1,4 @@
 import csv
-import logging
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
@@ -57,7 +56,7 @@ class Modeler(object):
 
         logit_predictions = self._test_logit(x_test)
         sgd_predictions = self._test_sgd(x_test)
-
+        
         everything = zip(test_labels, logit_predictions, sgd_predictions)
         
         total_rows = len(everything)
@@ -71,13 +70,11 @@ class Modeler(object):
             if prediction[2] == prediction[0]:
                 correct_sgd += 1
 
-        pct_logit = float(correct_logit) / float(total_rows)
-        pct_sgd = float(correct_sgd) / float(total_rows)
+        pct_logit = 100 * (float(correct_logit) / float(total_rows))
+        pct_sgd = 100 * (float(correct_sgd) / float(total_rows))
 
-        logging.info("Finished testing data")
-        # logging.info("Number of correct Logit: %s/%s or %s percent" %  (str(correct_logit), str(total_rows), str(pct_logit * 100)))
-        # logging.info("Number of correct SGD: %s/%s or %s percent" % (str(correct_sgd), str(total_rows), str(pct_sgd * 100)))
-
+        return (pct_logit, pct_sgd)
+        
     def _test_logit(self, test):
         return self.trained_logit.predict(test)
 
