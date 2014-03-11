@@ -57,9 +57,9 @@ class App(object):
                     in_reply_to_status_id=tweet['in_reply_to_status_id']
                 )
 
-                if self.modeler is not None:
+                if self.modeler is not None and tweet['message'] is not None:
                     predictions = self.modeler.predict([tweet['message']])
-
+                    
                     new_tweet.logit_prediction = int(predictions['logit'][0])
                     new_tweet.sgd_prediction = int(predictions['sgd'][0])
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         if app:
             app.stop()
         sys.exit(0)
-    except:
-        logging.warning(sys.exc_info()[0])
+    except Exception as e:
+        logging.warning(e.message)
         app.stop()
         sys.exit(0)

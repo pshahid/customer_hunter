@@ -3,6 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
 from sklearn.neural_network import BernoulliRBM
+from sklearn.svm import LinearSVC
 import numpy as np
 
 class Modeler(object):
@@ -30,7 +31,7 @@ class Modeler(object):
 
         with open(self.training_file, 'r') as training_file:
             reader = csv.reader(training_file, quotechar='"')
-            rows = [row for row in reader][0:]
+            rows = [row for row in reader][1:]
 
             labels, texts = self._randomize_dataset(rows)
         #File gets closed here
@@ -48,7 +49,7 @@ class Modeler(object):
 
         with open(self.test_file, 'r') as test_file:
             test_reader = csv.reader(test_file, quotechar='"')
-            test_rows = [row for row in test_reader][0:]
+            test_rows = [row for row in test_reader][1:]
 
             test_labels, test_texts = self._randomize_dataset(test_rows)
 
@@ -56,7 +57,7 @@ class Modeler(object):
 
         logit_predictions = self._test_logit(x_test)
         sgd_predictions = self._test_sgd(x_test)
-        
+
         everything = zip(test_labels, logit_predictions, sgd_predictions)
         
         total_rows = len(everything)
@@ -74,10 +75,11 @@ class Modeler(object):
         pct_sgd = 100 * (float(correct_sgd) / float(total_rows))
 
         return (pct_logit, pct_sgd)
-        
+
     def _test_logit(self, test):
         return self.trained_logit.predict(test)
 
+    #This uses LinearSVC. Need to change the names
     def _test_sgd(self, test):
         return self.trained_sgd.predict(test)
 
@@ -87,8 +89,9 @@ class Modeler(object):
 
         return classifier
 
+    #Actually a linear SVC
     def _train_sgd(self, X, y):
-        classifier = SGDClassifier(loss='hinge', penalty='l2')
+        classifier = LinearSVC(penalty='l2')
         classifier.fit_transform(X, y)
 
         return classifier      
