@@ -66,6 +66,7 @@ class App(object):
                 in_reply_to_status_id=tweet['in_reply_to_status_id']
             )
             tweet['created_date'] = str(tweet['created_date'])
+            tweet['twitter_id'] = str(tweet['twitter_id'])
             self.factory.dispatch("http://localhost/feed", json.dumps(tweet))
             # if self.modeler is not None and tweet['message'] is not None:
                 # predictions = self.modeler.predict([tweet['message']])
