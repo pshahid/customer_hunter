@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<title>Live View</title>
+	<head>
+		<script type="text/javascript" src="autobahn.js"></script>
+		<script type="text/javascript" src="jquery.min.js"></script>
+		<script>
+			window.wssession = null;
+			$(document).ready(function() {
+
+				ab.connect("ws://localhost:9000", function(session) {
+					window.wssession = session;
+					$("#output p").html("We have connected to websockets!");
+					window.wssession.subscribe('http://localhost/feed', topicActivity);
+
+				}, function(code, reason,detail) {
+					console.log("WS connection attempt failed");
+					console.log(reason);
+					$("#output p").html("We have not connected to websockets!");
+				}, {
+					'maxRetries': 60,
+					'retryDelay': 2000
+				});
+			});
+
+			function topicActivity(topic, event) {
+				event = JSON.parse(event);
+				console.log(event);
+				$("#output p").html(event['username'] + ' said "' + event['message'] + '" at ' + event['created_date']);
+				$("#output a").attr('href', 'http://twitter.com/' + event['username'] + '/status/' + event['twitter_id']);
+			}
+		</script>
+	</head>
+	<body>
+		<div id="output">
+			<p></p>
+			<a href="">Linky</a>
+		</div>
+	</body>
+</html>

@@ -1,8 +1,10 @@
 #Twitter specific OAuth2 shenanigans
-api_key = ""
-api_secret = ""
-access_token = ""
-access_secret = ""
+oauth = {
+	'api_key': '',
+	'api_secret': '',
+	'access_key': '',
+	'access_secret': ''
+}
 
 #Database
 db = "social_consumer"
@@ -14,3 +16,15 @@ filename = 'namethispls.log'
 level = 'DEBUG'
 format = '%(asctime)s %(message)s - '
 datefmt='%m/%d/%Y %I:%M:%S %p'
+
+#Twitter filter options
+use_bounding_box = False
+use_filters = False
+bounding_box = ["-80.441697, 32.512679", "-79.614146, 33.590588"]
+filters = [
+    "verizon",
+    "tmobile",
+    "t-mobile",
+    "at&t",
+    "sprint"
+]

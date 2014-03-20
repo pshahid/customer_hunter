@@ -168,9 +168,8 @@ class LocationConsumer(ConsumerStrategy):
         else:
             self.filter_fn = self._apply_filter
 
-    '''
-    Returns a Tweet model if the message passes the applied filter
-    '''
+    
+    '''Returns a Tweet model if the message passes the applied filter'''
     def consume(self, stream):
         tweet = stream.next()
 
@@ -183,8 +182,6 @@ class LocationConsumer(ConsumerStrategy):
             msg = self._remove_all_tweet_urls(tweet)
             msg = self._scrub(msg)
 
-            logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
-
             new_tweet = {
                 'message': msg,
                 'created_date': date,
@@ -196,6 +193,7 @@ class LocationConsumer(ConsumerStrategy):
             }
 
             if self.filter_fn(msg):
+                logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
                 return new_tweet
 
         return None
@@ -206,10 +204,7 @@ class LocationConsumer(ConsumerStrategy):
     '''
     def _apply_filter(self, sentence):
         if len(self.filters) > 0:
-            for f in self.filters:
-                if f in sentence:
-                    return True
-            return False
+            return any([f in sentence for f in self.filters])
         else:
             return True
 
