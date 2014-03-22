@@ -1,3 +1,10 @@
+#Server config options
+port = 9001
+domain = "localhost:9001"
+
+#WAMP specific settings
+wamp_topic = "feed"
+
 #Twitter specific OAuth2 shenanigans
 oauth = {
 	'api_key': '',

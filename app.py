@@ -10,6 +10,7 @@ from modeler import Modeler
 import server 
 from autobahn.twisted.websocket import listenWS
 from twisted.internet import defer, threads, reactor
+from twisted.internet.task import LoopingCall
 
 dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 
@@ -21,9 +22,15 @@ class App(object):
         if modeler is not None:
             self.modeler = modeler
         else:
-            self.modeler = None
+            self.modeler = None        
 
     def meta_start(self):
+        def ping_broadcast():
+            self.factory.dispatch(config.wamp_topic, json.dumps({"ping": ""}))
+
+        lc = LoopingCall(ping_broadcast)
+        lc.start(300)
+
         reactor.callInThread(self.start)
 
     def start(self):
@@ -67,7 +74,8 @@ class App(object):
             )
             tweet['created_date'] = str(tweet['created_date'])
             tweet['twitter_id'] = str(tweet['twitter_id'])
-            self.factory.dispatch("http://localhost/feed", json.dumps(tweet))
+            
+            self.factory.dispatch(config.wamp_topic, json.dumps(tweet))
             # if self.modeler is not None and tweet['message'] is not None:
                 # predictions = self.modeler.predict([tweet['message']])
 

@@ -7,11 +7,14 @@
 		<script>
 			window.wssession = null;
 			$(document).ready(function() {
-
-				ab.connect("ws://localhost:9000", function(session) {
+				var wsUrl = "ws://localhost:9001";
+				if (window.location.origin !== "file:///") {
+					wsUrl = "ws://sugar.appendixg.com:9001";
+				}
+				ab.connect(wsUrl, function(session) {
 					window.wssession = session;
 					$("#output p").html("We have connected to websockets!");
-					window.wssession.subscribe('http://localhost/feed', topicActivity);
+					window.wssession.subscribe('feed', topicActivity);
 
 				}, function(code, reason,detail) {
 					console.log("WS connection attempt failed");
@@ -26,8 +29,10 @@
 			function topicActivity(topic, event) {
 				event = JSON.parse(event);
 				console.log(event);
-				$("#output p").html(event['username'] + ' said "' + event['message'] + '" at ' + event['created_date']);
-				$("#output a").attr('href', 'http://twitter.com/' + event['username'] + '/status/' + event['twitter_id']);
+				if (event.hasOwnProperty("username")) {
+					$("#output p").html(event['username'] + ' said "' + event['message'] + '" at ' + event['created_date']);
+					$("#output a").attr('href', 'http://twitter.com/' + event['username'] + '/status/' + event['twitter_id']);
+				}
 			}
 		</script>
 	</head>
