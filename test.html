@@ -8,7 +8,7 @@
 			window.wssession = null;
 			$(document).ready(function() {
 				var wsUrl = "ws://localhost:9001";
-				if (window.location.origin !== "file:///") {
+				if (window.location.origin !== "file://") {
 					wsUrl = "ws://sugar.appendixg.com:9001";
 				}
 				ab.connect(wsUrl, function(session) {
