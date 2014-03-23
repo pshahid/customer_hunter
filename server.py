@@ -7,6 +7,7 @@ from models import *
 import config
 import app
 import json
+import datetime
 
 class Server(WampServerProtocol):
 
@@ -14,10 +15,18 @@ class Server(WampServerProtocol):
     def sendFeed(self, topicUri, event):
         print "sendFeed ", topicUri, event
 
-    def getInit(self):
+    def getInit(self, date):
         try:
-            obj = app.get_last()
+            if date is None or date == '':
+                parsed_date = datetime.datetime.now()
+            else:
+                parsed_date = datetime.datetime.strptime(date, '%m/%d/%Y %I:%M:%S %p')
+
+            obj = app.get_last(parsed_date)
+
             tweets = [str(tweet) for tweet in obj]
+        except ValueError:
+            return {'error': 'Given date was not parseable.'}
         except:
             log.msg(sys.exc_info()[1])
         else:

@@ -12,7 +12,8 @@
 		<script>
 			window.wssession = null;
 			var blinkerInterval = null,
-				windowFocus = true;
+				windowFocus = true,
+				infiniteScroll = false;
 
 			$(document).ready(function() {
 				$(window).focus(function() {
@@ -26,6 +27,19 @@
 					windowFocus = false;
 				});
 
+				$(document).scroll(function() {
+					var currentPos = $(window).scrollTop() + $(window).height();
+
+					if (currentPos >= $(document).height()) {
+						//This jquery gives us the the date/time of the last element on the page ;)
+						//Will need to be updated though according to the structure of the tweets so this isn't a
+						//best-practice since it's coupled tightly
+						var date = new Date(Date.parse($("#stream ol li:last-child h4 small").html()));
+						getSomeTweets(date.toLocaleString());
+						infiniteScroll = true;
+					}
+				});
+
 				var wsUrl = "ws://localhost:9001";
 				if (window.location.origin !== "file://") {
 					wsUrl = "ws://sugar.appendixg.com:9001";
@@ -34,23 +48,7 @@
 				ab.connect(wsUrl, function(session) {
 					window.wssession = session;
 					window.wssession.subscribe('feed', topicActivity);
-					window.wssession.call(wsUrl + '#getInit').then(
-						function(result) {
-							if ("push" in result) {
-								for (var i=0; i<result.length;i++) {
-									tweet = JSON.parse(result[i].replace(/'/g, '"'));
-									tweet['text'] = tweet['message'];
-									addTweet(tweet);
-								}
-							} else {
-								console.log("Uhh it's not an array....");
-								console.log(result);
-							}
-							
-						},
-						function(error) {console.log(error);}
-					);
-
+					getSomeTweets();
 				}, function(code, reason,detail) {
 					console.log("WS connection attempt failed");
 					console.log(reason);
@@ -59,7 +57,27 @@
 					'retryDelay': 2000
 				});
 			});
+	
+			function getSomeTweets(date) {
+				date = typeof date === "undefined" ? new Date().toLocaleString() : date;
 
+				window.wssession.call(window.wssession._wsuri + '#getInit', date).then(
+					function(result) {
+						if ("push" in result) {
+							for (var i=0; i<result.length;i++) {
+								tweet = JSON.parse(result[i].replace(/'/g, '"'));
+								tweet['text'] = tweet['message'];
+								addTweet(tweet);
+							}
+						} else {
+							console.log("Uhh it's not an array....");
+							console.log(result);
+						}
+						
+					},
+					function(error) {console.log(error);}
+				);
+			}
 			function topicActivity(topic, event) {
 				event = JSON.parse(event);
 				console.log(event);
@@ -72,19 +90,26 @@
 			function addTweet(tweet) {
 				var children = $("#stream ol").children().length;
 				
-				if (children >= 10) {
+				if (children >= 10 && infiniteScroll === false) {
 					$("#stream ol li:last-child").remove();
 				}
 
 				var html = '' +
 				'<li id="' + tweet['twitter_id'] + '">' +
-				'	<div id="' + tweet['twitter_id'] + '_div" style="border-bottom: 1px solid #ccc;">' +
+				'	<div id="' + tweet['twitter_id'] + '_div" style="border-bottom: 1px solid #ccc; display: none;">' +
 				'		<h4>' + tweet['username'] + '</h4>'+ 
 				'		<p>' + tweet['text'] + '</p>' + 
-				'		<a href="http://twitter.com/' + tweet['username'] + '/status/' + tweet['twitter_id'] + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(tweet['created_date'] + " GMT")).toLocaleTimeString() + '</small></h4></div>' +
+				'		<a href="http://twitter.com/' + tweet['username'] + '/status/' + tweet['twitter_id'] + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(tweet['created_date'] + " GMT")).toLocaleString() + '</small></h4></div>' +
 				'	</div>' +
 				'</li>';
-				$("#stream ol").prepend(html);
+
+				if (infiniteScroll === true) {
+					$("#stream ol").append(html);
+				} else {
+					$("#stream ol").prepend(html);
+				}
+				
+				$("#" + tweet['twitter_id'] + "_div").fadeIn();
 			}
 
 			function changeTitle() {

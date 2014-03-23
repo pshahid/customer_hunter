@@ -106,10 +106,9 @@ class App(object):
         logging.basicConfig(level=logging.INFO, filename='consumer.log', \
             format='%(asctime)s - %(message)s ', datefmt=config.datefmt)
 
-def get_last():
+def get_last(date):
     dbconn.connect()
-    return Tweet.select().order_by(Tweet.created_date.desc()).limit(10)
-            # return "I like biscuits and taters"
+    return Tweet.select().where(Tweet.created_date <= date).order_by(Tweet.created_date.desc()).limit(10)
 
 if __name__ == "__main__":
     try:
