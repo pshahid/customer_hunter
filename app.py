@@ -2,7 +2,7 @@ import logging
 import sys
 import json
 from peewee import *
-from models import * 
+from models import Tweet
 import config
 from consumer import TwitterConsumer
 from modeler import Modeler
@@ -14,17 +14,20 @@ from twisted.internet.task import LoopingCall
 
 dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 
-class App(object):
-    def __init__(self, factory, modeler=None):
-        self.consumer = None
-        self.factory = factory
+class AppRef(object):
+    pass
 
-        if modeler is not None:
-            self.modeler = modeler
-        else:
-            self.modeler = None        
+app_ref = AppRef()
+app_ref.app = None
+
+class App(object):
+    def __init__(self):
+        self.consumer = None
+        self.factory = None
+        self.modeler = None    
 
     def meta_start(self):
+
         def ping_broadcast():
             self.factory.dispatch(config.wamp_topic, json.dumps({"ping": ""}))
 
@@ -36,9 +39,14 @@ class App(object):
     def start(self):
         self._setup_logging()
         dbconn.connect()
+        
         Tweet.create_table(fail_silently=True)
         # User.create_table(fail_silently=True)
         # Prediction.create_table(fail_silently=True)
+        
+        self.modeler = Modeler(config.training, config.test)
+        self.modeler.load_training()
+        self.modeler.load_test()
 
         filters = config.filters
         bounding_box = config.bounding_box
@@ -49,8 +57,6 @@ class App(object):
             bounding_box=bounding_box)
 
         self.consumer.start()
-        # while True:
-        #     tweet = self.consumer.consume()
 
         self._consume()
 
@@ -74,7 +80,7 @@ class App(object):
             )
             tweet['created_date'] = str(tweet['created_date'])
             tweet['twitter_id'] = str(tweet['twitter_id'])
-            
+
             self.factory.dispatch(config.wamp_topic, json.dumps(tweet))
             # if self.modeler is not None and tweet['message'] is not None:
                 # predictions = self.modeler.predict([tweet['message']])
@@ -97,41 +103,31 @@ class App(object):
         self.consumer.stop()
 
     def _setup_logging(self):
-        # levels = {
-        #     'DEBUG': logging.DEBUG,
-        #     'INFO': logging.INFO,
-        #     'WARN': logging.WARNING,
-        #     'ERROR': logging.ERROR,
-        #     'CRIT': logging.CRITICAL
-        # }
-
-        # level = levels[config.level]
         logging.basicConfig(level=logging.INFO, filename='consumer.log', \
             format='%(asctime)s - %(message)s ', datefmt=config.datefmt)
 
+def get_last():
+    dbconn.connect()
+    return Tweet.select().order_by(Tweet.created_date.desc()).limit(10)
+            # return "I like biscuits and taters"
+
 if __name__ == "__main__":
-    app = None
     try:
-        factory = server.build_server_factory()
-
-        modeler = Modeler(config.training, config.test)
-        modeler.load_training()
-        modeler.load_test()
-
-        app = App(factory, modeler=modeler)
-
-        listenWS(factory)
-
+        app = App()
+        app.factory = server.build_server_factory()
+        listenWS(app.factory)
         reactor.callWhenRunning(app.meta_start)
         reactor.run()
 
     except KeyboardInterrupt:
         if app:
             app.stop()
+
         sys.exit(0)
     except:
         print(sys.exc_info()[1])
         logging.warning(sys.exc_info()[1])
+        
         app.stop()
         reactor.stop()
         sys.exit(0)

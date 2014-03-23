@@ -182,19 +182,24 @@ class LocationConsumer(ConsumerStrategy):
             msg = self._remove_all_tweet_urls(tweet)
             msg = self._scrub(msg)
 
-            new_tweet = {
-                'message': msg,
-                'created_date': date,
-                'twitter_id': tweet.get('id'), 
-                'username': tweet.get('user').get('screen_name'),
-                'in_reply_to_screen_name': tweet.get('in_reply_to_screen_name'),
-                'in_reply_to_user_id': tweet.get('in_reply_to_user_id'),
-                'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
-            }
+            tweet['message'] = msg
+            tweet['created_date'] = date
+            tweet['username'] = tweet.get('user').get('screen_name')
+            tweet['twitter_id'] = tweet.get('id')
+
+            # new_tweet = {
+            #     'message': msg,
+            #     'created_date': date,
+            #     'twitter_id': tweet.get('id'), 
+            #     'username': tweet.get('user').get('screen_name'),
+            #     'in_reply_to_screen_name': tweet.get('in_reply_to_screen_name'),
+            #     'in_reply_to_user_id': tweet.get('in_reply_to_user_id'),
+            #     'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
+            # }
 
             if self.filter_fn(msg):
                 logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
-                return new_tweet
+                return tweet
 
         return None
 
@@ -226,16 +231,20 @@ class FilterConsumer(ConsumerStrategy):
 
             logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
 
-            new_tweet = {
-                'message': msg,
-                'created_date': date,
-                'twitter_id': tweet.get('id'), 
-                'username': tweet.get('user').get('screen_name'),
-                'in_reply_to_screen_name': tweet.get('in_reply_to_screen_name'),
-                'in_reply_to_user_id': tweet.get('in_reply_to_user_id'),
-                'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
-            }
+            tweet['message'] = msg
+            tweet['created_date'] = date
+            tweet['username'] = tweet.get('user').get('screen_name')
+            tweet['twitter_id'] = tweet.get('id')
+            # new_tweet = {
+            #     'message': msg,
+            #     'created_date': date,
+            #     'twitter_id': tweet.get('id'), 
+            #     'username': tweet.get('user').get('screen_name'),
+            #     'in_reply_to_screen_name': tweet.get('in_reply_to_screen_name'),
+            #     'in_reply_to_user_id': tweet.get('in_reply_to_user_id'),
+            #     'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
+            # }
 
-            return new_tweet
+            return tweet
 
         return None

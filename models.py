@@ -1,11 +1,21 @@
 from peewee import *
-from app import dbconn
+# from app import dbconn
 import datetime
+import config
 
 class MySQLModel(Model):
-
+    def __str__(self):
+        r = {}
+        for k in self._data.keys():
+          try:
+             r[k] = str(getattr(self, k))
+          except:
+             r[k] = json.dumps(getattr(self, k))
+        return str(r)
+    
     class Meta:
-        database = dbconn
+        database = MySQLDatabase(config.db, user=config.user, passwd=config.password)
+        # database = dbconn
 
 class User(MySQLModel):
     username = CharField()

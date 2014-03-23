@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Live View</title>
+	<head>
+		<link href="css/bootstrap.min.css" type="text/css" rel="stylesheet"></link>
+		<script type="text/javascript" src="js/jquery.min.js"></script>
+		<script type="text/javascript" src="js/autobahn.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script>
+			window.wssession = null;
+			var blinkerInterval = null,
+				windowFocus = true;
+
+			$(document).ready(function() {
+				$(window).focus(function() {
+					clearInterval(blinkerInterval);
+					windowFocus = true;
+					blinkerInterval = null;
+					$("title").text("Live View");
+				});
+
+				$(window).blur(function() {
+					windowFocus = false;
+				});
+
+				var wsUrl = "ws://localhost:9001";
+				if (window.location.origin !== "file://") {
+					wsUrl = "ws://sugar.appendixg.com:9001";
+				}
+
+				ab.connect(wsUrl, function(session) {
+					window.wssession = session;
+					window.wssession.subscribe('feed', topicActivity);
+					window.wssession.call(wsUrl + '#getInit').then(
+						function(result) {
+							if ("push" in result) {
+								for (var i=0; i<result.length;i++) {
+									tweet = JSON.parse(result[i].replace(/'/g, '"'));
+									tweet['text'] = tweet['message'];
+									addTweet(tweet);
+								}
+							} else {
+								console.log("Uhh it's not an array....");
+								console.log(result);
+							}
+							
+						},
+						function(error) {console.log(error);}
+					);
+
+				}, function(code, reason,detail) {
+					console.log("WS connection attempt failed");
+					console.log(reason);
+				}, {
+					'maxRetries': 60,
+					'retryDelay': 2000
+				});
+			});
+
+			function topicActivity(topic, event) {
+				event = JSON.parse(event);
+				console.log(event);
+				if (event.hasOwnProperty("username")) {
+					addTweet(event);
+					blinkerInterval = window.setInterval(changeTitle, 700);
+				}
+			}
+
+			function addTweet(tweet) {
+				var children = $("#stream ol").children().length;
+				
+				if (children >= 10) {
+					$("#stream ol li:last-child").remove();
+				}
+
+				var html = '' +
+				'<li id="' + tweet['twitter_id'] + '">' +
+				'	<div id="' + tweet['twitter_id'] + '_div" style="border-bottom: 1px solid #ccc;">' +
+				'		<h4>' + tweet['username'] + '</h4>'+ 
+				'		<p>' + tweet['text'] + '</p>' + 
+				'		<a href="http://twitter.com/' + tweet['username'] + '/status/' + tweet['twitter_id'] + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(tweet['created_date'] + " GMT")).toLocaleTimeString() + '</small></h4></div>' +
+				'	</div>' +
+				'</li>';
+				$("#stream ol").prepend(html);
+			}
+
+			function changeTitle() {
+				if (blinkerInterval !== null && windowFocus === false) {
+					document.title = document.title == "Live View" ? "Activity!" : "Live View";
+				} else {
+					document.title = "Live View";
+				} 
+			}
+		</script>
+	</head>
+	<body>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 col-md-offset-2">
+					<div style="border-bottom:1px solid #ccc;">
+						<h2>Stream</h2>
+					</div>
+					<div id="stream">
+						<ol class="list-unstyled">
+						</ol>
+<!-- 						<div id="output">
+							<p></p>
+							<a href="" target="_blank">Linky</a>
+						</div> -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
