@@ -107,7 +107,7 @@
 
 				var html = '' +
 				'<li id="' + tweet['twitter_id'] + '">' +
-				'	<div id="' + tweet['twitter_id'] + '_div" style="border-bottom: 1px solid #ccc; display: none;">' +
+				'	<div id="' + tweet['twitter_id'] + '_div" style="border-bottom: 1px solid #ccc;">' +
 				'		<h4>' + tweet['username'] + '</h4>'+ 
 				'		<p>' + tweet['text'] + '</p>' + 
 				'		<a href="http://twitter.com/' + tweet['username'] + '/status/' + tweet['twitter_id'] + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(tweet['created_date'] + " GMT")).toLocaleString() + '</small></h4></div>' +
