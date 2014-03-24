@@ -13,7 +13,6 @@
 			window.wssession = null;
 			var blinkerInterval = null,
 				windowFocus = true,
-				infiniteScroll = false,
 				scrollTimeout = null;
 
 			$(document).ready(function() {
@@ -39,7 +38,6 @@
 							//Will need to be updated though according to the structure of the tweets so this isn't a
 							//best-practice since it's coupled tightly
 							var date = new Date(Date.parse($("#stream ol li:last-child h4 small").html()));
-							infiniteScroll = true;
 							getSomeTweets(date.toISOString(), false);
 							
 						}
@@ -65,7 +63,7 @@
 				});
 			});
 	
-			function getSomeTweets(date) {
+			function getSomeTweets(date, prepend) {
 				if (typeof date === "undefined" || date === null) {
 					date = new Date().toISOString();
 				}
@@ -77,7 +75,7 @@
 							for (var i=0; i<result.length;i++) {
 								tweet = JSON.parse(result[i].replace(/'/g, '"'));
 								tweet['text'] = tweet['message'];
-								addTweet(tweet, false);
+								addTweet(tweet, prepend);
 							}
 						} else {
 							console.log("Uhh it's not an array....");
@@ -100,7 +98,7 @@
 			function addTweet(tweet, prepend) {
 				var children = $("#stream ol").children().length;
 				
-				if (children >= 10 && infiniteScroll === false) {
+				if (children >= 10 && prepend === true) {
 					console.log("Removin some shit");
 					$("#stream ol li:last-child").remove();
 				}
@@ -114,7 +112,7 @@
 				'	</div>' +
 				'</li>';
 
-				if (infiniteScroll === true && prepend === false) {
+				if (prepend === false) {
 					$("#stream ol").append(html);
 				} else {
 					$("#stream ol").prepend(html);
