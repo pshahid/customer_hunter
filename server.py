@@ -20,13 +20,14 @@ class Server(WampServerProtocol):
             if date is None or date == '':
                 parsed_date = datetime.datetime.now()
             else:
-                parsed_date = datetime.datetime.strptime(date, '%m/%d/%Y %I:%M:%S %p')
+                parsed_date = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
             obj = app.get_last(parsed_date)
 
             tweets = [str(tweet) for tweet in obj]
         except ValueError:
-            return {'error': 'Given date was not parseable.'}
+            log.msg(sys.exc_info()[1])
+            return 'Error: That date was not parseable.'
         except:
             log.msg(sys.exc_info()[1])
         else:

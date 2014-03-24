@@ -13,7 +13,8 @@
 			window.wssession = null;
 			var blinkerInterval = null,
 				windowFocus = true,
-				infiniteScroll = false;
+				infiniteScroll = false,
+				scrollTimeout = null;
 
 			$(document).ready(function() {
 				$(window).focus(function() {
@@ -28,16 +29,21 @@
 				});
 
 				$(document).scroll(function() {
-					var currentPos = $(window).scrollTop() + $(window).height();
+					clearTimeout(scrollTimeout);
+					scrollTimeout = setTimeout(function() {
 
-					if (currentPos >= $(document).height()) {
-						//This jquery gives us the the date/time of the last element on the page ;)
-						//Will need to be updated though according to the structure of the tweets so this isn't a
-						//best-practice since it's coupled tightly
-						var date = new Date(Date.parse($("#stream ol li:last-child h4 small").html()));
-						getSomeTweets(date.toLocaleString());
-						infiniteScroll = true;
-					}
+						var currentPos = $(window).scrollTop() + $(window).height();
+
+						if (currentPos >= $(document).height()) {
+							//This jquery gives us the the date/time of the last element on the page ;)
+							//Will need to be updated though according to the structure of the tweets so this isn't a
+							//best-practice since it's coupled tightly
+							var date = new Date(Date.parse($("#stream ol li:last-child h4 small").html()));
+							infiniteScroll = true;
+							getSomeTweets(date.toISOString(), false);
+							
+						}
+					}, 100);
 				});
 
 				var wsUrl = "ws://localhost:9001";
@@ -48,7 +54,8 @@
 				ab.connect(wsUrl, function(session) {
 					window.wssession = session;
 					window.wssession.subscribe('feed', topicActivity);
-					getSomeTweets();
+
+					getSomeTweets(new Date().toISOString(), false);
 				}, function(code, reason,detail) {
 					console.log("WS connection attempt failed");
 					console.log(reason);
@@ -59,7 +66,9 @@
 			});
 	
 			function getSomeTweets(date) {
-				date = typeof date === "undefined" ? new Date().toLocaleString() : date;
+				if (typeof date === "undefined" || date === null) {
+					date = new Date().toISOString();
+				}
 
 				window.wssession.call(window.wssession._wsuri + '#getInit', date).then(
 					function(result) {
@@ -67,7 +76,7 @@
 							for (var i=0; i<result.length;i++) {
 								tweet = JSON.parse(result[i].replace(/'/g, '"'));
 								tweet['text'] = tweet['message'];
-								addTweet(tweet);
+								addTweet(tweet, false);
 							}
 						} else {
 							console.log("Uhh it's not an array....");
@@ -82,15 +91,16 @@
 				event = JSON.parse(event);
 				console.log(event);
 				if (event.hasOwnProperty("username")) {
-					addTweet(event);
+					addTweet(event, true);
 					blinkerInterval = window.setInterval(changeTitle, 700);
 				}
 			}
 
-			function addTweet(tweet) {
+			function addTweet(tweet, prepend) {
 				var children = $("#stream ol").children().length;
 				
 				if (children >= 10 && infiniteScroll === false) {
+					console.log("Removin some shit");
 					$("#stream ol li:last-child").remove();
 				}
 
@@ -103,7 +113,7 @@
 				'	</div>' +
 				'</li>';
 
-				if (infiniteScroll === true) {
+				if (infiniteScroll === true && prepend === false) {
 					$("#stream ol").append(html);
 				} else {
 					$("#stream ol").prepend(html);
