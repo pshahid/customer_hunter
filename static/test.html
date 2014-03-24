@@ -70,7 +70,7 @@
 					date = new Date().toISOString();
 				}
 
-				window.wssession.call(window.wssession._wsuri + '#getInit', date).then() {
+				window.wssession.call(window.wssession._wsuri + '#getInit', date).then(
 					function(result) {
 						console.log("Got getSomeTweets result");
 						if ("push" in result) {
