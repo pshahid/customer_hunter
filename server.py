@@ -35,11 +35,11 @@ class Server(WampServerProtocol):
 
     def onSessionOpen(self):
         self.registerForPubSub(config.wamp_topic)
-        self.registerMethodForRpc("ws://" + config.domain + "/wamp#getInit", self, Server.getInit)
+        self.registerMethodForRpc("#getInit", self, Server.getInit)
 
 def build_server_factory():
     log.startLogging(sys.stdout)
-    factory = WampServerFactory("ws://" + config.domain + "/wamp")
+    factory = WampServerFactory("ws://" + config.domain + "/wamp", externalPort=config.port)
     factory.protocol = Server
     factory.setProtocolOptions(allowHixie76 = True)
 
