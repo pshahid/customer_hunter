@@ -18,6 +18,12 @@ Things you'll need in the order that you'll need them:
 * [Python-twitter](https://github.com/bear/python-twitter)
 * [Peewee Python ORM](https://github.com/coleifer/peewee)
 
+### Contributing
+
+If you are planning on contributing code to this project, please fork the project and do all of your work in the development branch. After you feel like you're finished and you're ready for your code to join the master codebase, please submit a pull-request and tag the relevant issue(s) in your pull-request.
+
+Note: for ALL code we're using 4-space tabs. Please do not commit any code with any other type of tabs (tab char, etc)
+
 ### Installation
 
 #### Installing Git
