@@ -17,6 +17,7 @@ Things you'll need in the order that you'll need them:
 * [Scikit-learn](http://scikit-learn.org/stable/install.html#windows-installer)
 * [Python-twitter](https://github.com/bear/python-twitter)
 * [Peewee Python ORM](https://github.com/coleifer/peewee)
+* [Autobahn Python](http://autobahn.ws/python/)
 
 ### Contributing
 

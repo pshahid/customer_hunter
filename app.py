@@ -94,6 +94,7 @@ def get_last(date):
 if __name__ == "__main__":
     try:
         reactor.callWhenRunning(app.start)
+        reactor.callWhenRunning(webapp.run)
         reactor.run()
     except KeyboardInterrupt:
         stop()

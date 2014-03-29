@@ -15,7 +15,6 @@ class MySQLModel(Model):
     
     class Meta:
         database = MySQLDatabase(config.db, user=config.user, passwd=config.password)
-        # database = dbconn
 
 class User(MySQLModel):
     username = CharField()
