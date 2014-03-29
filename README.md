@@ -25,7 +25,20 @@ If you are planning on contributing code to this project, please fork the projec
 
 Note: for ALL code we're using 4-space tabs. Please do not commit any code with any other type of tabs (tab char, etc)
 
-### Installation
+### Running the server (on OSX/Linux)
+
+If you want to run the server in the foreground do this from the terminal:
+
+```
+python app.py
+```
+If you want to run it in the background do this from the terminal:
+
+```
+python app.py &
+```
+
+### Installation on Windows
 
 #### Installing Git
 
