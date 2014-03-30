@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <script type="text/javascript" href="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script type="text/javascript" href="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <title>{% block title %} {{ title }} {% endblock %}</title>
+    {% endblock %}
+  </head>
+  <body>
+    <div id="content">{% block content %} {{ content }} {% endblock %}</div>
+    <div><a href="/twitter_login">Click this link to sign in to Twittar!</a></div>
+    <div id="footer">
+      {% block footer %}
+      &copy; Copyright 2010 by <a href="http://domain.invalid/">you</a>.
+      {% endblock %}
+    </div>
+  </body>
+</html>
