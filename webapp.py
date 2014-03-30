@@ -62,12 +62,13 @@ def auth_area():
 
 @webapp.route('/twitter_login')
 def auth_to_twitter():
+	print request.cookies
 	#step 1
 	twitter = OAuth1Session(CLIENT_KEY, client_secret=CLIENT_SECRET, callback_uri='http://127.0.0.1:5000/callback')
 	fetch_response = twitter.fetch_request_token('https://api.twitter.com/oauth/request_token')
 
-	#step 2
-	auth_url = twitter.authorization_url('https://api.twitter.com/oauth/authorize')
+	#step 2 Could also be sent to /oauth/authorize
+	auth_url = twitter.authorization_url('https://api.twitter.com/oauth/authenticate?force_login=True')
 
 	return redirect(auth_url)
 
