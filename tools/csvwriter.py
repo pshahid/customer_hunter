@@ -1,12 +1,12 @@
 import csv
 import sys
 from peewee import *
-# from models import *
+from customer_hunter.models import *
 import argparse
 import sys
 
-print sys.path
-sys.exit(0)
+# print sys.path
+# sys.exit(0)
 dbconn = MySQLDatabase("social_consumer", user="root")
 dbconn.connect()
 
@@ -35,6 +35,10 @@ def read_from_db(fname, start_id=0, total=-1):
             csv_writer.writerow(row)
 
 if __name__ == "__main__":
+
+    if __package__ is None:
+        __package__ = "customer_hunter.tools"
+
     parser = argparse.ArgumentParser(description='Write MySQL rows out to CSV files.')
     parser.add_argument('-s', '--start_id', action='store', type=int, help="Tweet ID to start with in the DB", required=False)
     parser.add_argument('-t', '--total',action='store', type=int,help="How many rows to write", required=False)
