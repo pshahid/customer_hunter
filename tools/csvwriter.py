@@ -2,12 +2,13 @@ import csv
 import sys
 from peewee import *
 from customer_hunter.models import *
+from customer_hunter import config
 import argparse
 import sys
 
 # print sys.path
 # sys.exit(0)
-dbconn = MySQLDatabase("social_consumer", user="root")
+dbconn = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 dbconn.connect()
 
 def read_from_db(fname, start_id=0, total=-1):
