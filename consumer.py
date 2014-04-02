@@ -9,9 +9,6 @@ import twitter
 
 parser = HTMLParser()
 
-'''
-Callback is the function passed whenever a new tweet is inserted into the database.
-'''
 class TwitterConsumer(object):
     def __init__(self, api_kwargs, filters=None, bounding_box=None):
         self.api_kwargs = api_kwargs    #Must be a dict of api kwargs
@@ -80,16 +77,24 @@ class TwitterConsumer(object):
         return self.consumer_context.consume(self.stream)
 
 class ConsumerStrategy(object):
+    """
+    Abstract base implementation of a ConsumerStrategy, which has text-scrubbing
+    capabilities, as well as date parsing ability. You must instantiate children
+    of this strategy, such as FilterConsumer or LocationConsumer.
+    """
     def __init__(self):
         pass
 
     def consume(self, stream):
+        """
+        A synchronous, BLOCKING method which is in charge of coordinating the consumption
+        efforts of any given strategy. 
+
+        This accepts a TwitterApi object from python-twitter
+        and returns a dictionary representing a recently received tweet.
+        """
         raise NotImplementedError("ConsumerStrategy has not implemented consume. This class hasn't been subclassed.")
 
-    '''
-    Return given text with HTML parsed into normal UTF-16 and remove new lines. 
-    Raises a TypeError if argument text is None. Also removes punctuation.
-    '''
     def _scrub(self, text):
         try:
             #Parse annoying HTML characters like &amp;
@@ -142,35 +147,32 @@ class ConsumerStrategy(object):
 
         return text
 
-    '''
-    Return given text with all URLs removed. Optional arguments start and length
-    are the index where the URL starts and the length of the URL respectively. These help
-    to more quickly remove the URL; use them when they are immediately available (Tweets).
-    '''
     def _remove_url(self, text, lindex=-1, rindex=-1):
+        '''
+        Return given text with all URLs removed. Optional arguments start and length
+        are the index where the URL starts and the length of the URL respectively. These help
+        to more quickly remove the URL; use them when they are immediately available (Tweets).
+        '''
         if lindex > -1 and rindex > -1:
             return text[0:lindex] + text[rindex:]
         else:
             raise NotImplementedError("remove_url currently requires 3 arguments, 1 given.")
 
 class LocationConsumer(ConsumerStrategy):
-
-    def __init__(self, filters, filter_fn=None):
+    """
+    A consumer strategy which also filters based on the given list of filters
+    passed in through the constructor. 
+    """
+    def __init__(self, filters):
         super(LocationConsumer, self).__init__()
 
         if filters is not None:
             self.filters = [f.lower() for f in filters]
         else:
             self.filters = []
-
-        if filter_fn is not None:
-            self.filter_fn = filter_fn
-        else:
-            self.filter_fn = self._apply_filter
-
     
-    '''Returns a Tweet model if the message passes the applied filter'''
     def consume(self, stream):
+        """Returns a dictionary representing a Tweet if the message passes the applied filter"""
         tweet = stream.next()
 
         if tweet == None:
@@ -187,26 +189,12 @@ class LocationConsumer(ConsumerStrategy):
             tweet['username'] = tweet.get('user').get('screen_name')
             tweet['twitter_id'] = tweet.get('id')
 
-            # new_tweet = {
-            #     'message': msg,
-            #     'created_date': date,
-            #     'twitter_id': tweet.get('id'), 
-            #     'username': tweet.get('user').get('screen_name'),
-            #     'in_reply_to_screen_name': tweet.get('in_reply_to_screen_name'),
-            #     'in_reply_to_user_id': tweet.get('in_reply_to_user_id'),
-            #     'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
-            # }
-
-            if self.filter_fn(msg):
+            if self._apply_filter(msg):
                 logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
                 return tweet
 
         return None
 
-    '''
-    Returns true if any of filters is in sentence. This sentence is assumed to have been scrubbed
-    already, and the filters are not case sensitive.
-    '''
     def _apply_filter(self, sentence):
         if len(self.filters) > 0:
             return any([f in sentence for f in self.filters])
@@ -214,6 +202,9 @@ class LocationConsumer(ConsumerStrategy):
             return True
 
 class FilterConsumer(ConsumerStrategy):
+    """
+    A bare-bones implementation of a consumer strategy.
+    """
     def __init__(self):
         super(FilterConsumer, self).__init__()
 
@@ -235,15 +226,6 @@ class FilterConsumer(ConsumerStrategy):
             tweet['created_date'] = date
             tweet['username'] = tweet.get('user').get('screen_name')
             tweet['twitter_id'] = tweet.get('id')
-            # new_tweet = {
-            #     'message': msg,
-            #     'created_date': date,
-            #     'twitter_id': tweet.get('id'), 
-            #     'username': tweet.get('user').get('screen_name'),
-            #     'in_reply_to_screen_name': tweet.get('in_reply_to_screen_name'),
-            #     'in_reply_to_user_id': tweet.get('in_reply_to_user_id'),
-            #     'in_reply_to_status_id': tweet.get('in_reply_to_status_id')
-            # }
 
             return tweet
 
