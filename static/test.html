@@ -45,7 +45,7 @@
 				});
 
 				var wsUrl = "ws://localhost:9001";
-				if (window.location.origin !== "file://") {
+				if (window.location.origin !== "file://" && window.location.origin !== 'http://localhost:9000') {
 					wsUrl = "ws://sugar.appendixg.com/wamp";
 				}
 
@@ -71,6 +71,7 @@
 				window.wssession.call('#getInit', date).then(
 					function(result) {
 						console.log("Got getSomeTweets result");
+						console.log(result);
 						if ("push" in result) {
 							for (var i=0; i<result.length;i++) {
 								tweet = JSON.parse(result[i].replace(/'/g, '"'));

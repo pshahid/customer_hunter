@@ -1,9 +1,11 @@
 from peewee import *
-# from app import dbconn
 import datetime
 import config
 
 class MySQLModel(Model):
+    class Meta:
+        database = MySQLDatabase('social_consumer', user='root', passwd='')
+
     def __str__(self):
         r = {}
         for k in self._data.keys():
@@ -12,9 +14,6 @@ class MySQLModel(Model):
           except:
              r[k] = json.dumps(getattr(self, k))
         return str(r)
-    
-    class Meta:
-        database = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 
 class User(MySQLModel):
     username = CharField()

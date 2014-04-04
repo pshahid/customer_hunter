@@ -36,9 +36,8 @@ class TwitterConsumer(object):
 
             self.start_time = time.time()
             self.tweet_count = 0
-            logging.debug("Verifying credentials.")
-            self.user = self.api.VerifyCredentials()
 
+            self.user = self.api.VerifyCredentials()
             #Choose between a locations-based or filters-based consumer.
             #It should not appear any different outwardly
             if self.locations is None:
