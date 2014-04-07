@@ -2,11 +2,14 @@ from flask_peewee.auth import Auth
 from flask_peewee.admin import Admin
 from flask_peewee.db import Database
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
+from wtforms import Form, validators
+import wtforms
 from requests_oauthlib import OAuth1Session
 from flask_peewee.admin import ModelAdmin
 from peewee import *
 import config 
 import os
+import sys
 # import flask_models
 
 SECRET_KEY = 'wasdfasdfat'
@@ -32,8 +35,9 @@ class TwitterUser(db.Model):
     username = CharField()
     auth_token = CharField()
     auth_secret = CharField()
-    fname = CharField()
-    lname = CharField()
+    twitter_id = BigIntegerField()
+    fname = CharField(null=True, default="")
+    lname = CharField(null=True, default="")
 
 #Helps pretty print the TwitterUser in the admin
 class TwitterUserAdmin(ModelAdmin):
@@ -42,6 +46,11 @@ class TwitterUserAdmin(ModelAdmin):
 #flask-peewee auth/admin junk
 auth = Auth(webapp, db)
 admin = Admin(webapp, auth)
+
+class SignInForm(Form):
+    email = wtforms.TextField(validators=[validators.Length(min=6, max=35)])
+    password = wtforms.PasswordField('Password', [validators.Required()])
+
 
 def init_admin():
     admin.register(TwitterUser, TwitterUserAdmin) #Register the admin nonsense for flask-peewee
@@ -67,6 +76,19 @@ def auth_area():
 
     return "Hello logged in user!"
 
+@webapp.route('/login', methods=['GET', 'POST'])
+def login():
+    form = SignInForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        return render_template('auth_main.html', username=request.form['email'], local=True)
+
+    return render_template('login.html', form=form)
+
+@webapp.route('/logout')
+def logout():
+    return render_template('index.html', title='ML Systems')
+
 @webapp.route('/twitter_login')
 def auth_to_twitter():
     print request.cookies
@@ -81,33 +103,29 @@ def auth_to_twitter():
 
 @webapp.route('/callback')
 def callback():
-    print dir(request)
     #Gotta rebuild the session for step 3
     twitter = OAuth1Session(CLIENT_KEY, client_secret=CLIENT_SECRET)
     twitter.parse_authorization_response(request.url)
     #Step 3
     token = twitter.fetch_access_token('https://api.twitter.com/oauth/access_token')
 
-    print(token)
+    try:
+        twitter_id= token['user_id']
+        
+        user = TwitterUser.get(TwitterUser.twitter_id == twitter_id)
 
-    return "Success, we logged in!"
+        user.auth_token = token['oauth_token']
+        user.auth_secret = token['oauth_token_secret']
+        user.save()
+        content='Welcome back, ' + token['screen_name']
+    except DoesNotExist:
+        user = TwitterUser(username=token['screen_name'], twitter_id=token['user_id'], auth_secret=token['oauth_token_secret'], auth_token=token['oauth_token'])
+        user.save()
+        content = 'Welcome to ML Systems, you\'ve added ' + token['screen_name'] + ' as a Twitter account.'
 
-# @webapp.route('/stream')
-# def stream():
-#     return webapp.send_static_file('/Users/paul/repos/customer_hunter/app/static/test.html')
+    return render_template('index.html', title='Logged in', content=content)
 
 if __name__ == '__main__':
     init_db()
     init_admin()
-    webapp.run(port=9000)
-# @webapp.route('/static/js/<path:path>')
-# def scripts(path):
-#     return webapp.send_static_file(os.path.join('/js/', path))
-
-# @webapp.route('/static/css/<path:path>')
-# def styles(path):
-#     return webapp.send_static_file(os.path.join('/css/', path))
-
-# @webapp.route('/static/fonts/<path:path>')
-# def fonts(path):
-#     return webapp.send_static_file(os.path.join('/fonts/', path))
+    webapp.run(port=5000, debug=True)

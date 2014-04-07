@@ -63,9 +63,9 @@ def _consume_callback(tweet):
         tweet['created_date'] = str(tweet['created_date'])
         tweet['twitter_id'] = str(tweet['twitter_id'])
 
-        # if tweet['coordinates'] is not None:
-            # new_tweet.longitude = tweet['coordinates']['coordinates'][0]
-            # new_tweet.latitude = tweet['coordinates']['coordinates'][1]
+        if tweet['coordinates'] is not None and 'point' in tweet['coordinates']:
+            new_tweet.longitude = tweet['coordinates']['coordinates'][0]
+            new_tweet.latitude = tweet['coordinates']['coordinates'][1]
 
         factory.dispatch(config.wamp_topic, json.dumps(tweet))
         # if self.modeler is not None and tweet['message'] is not None:
@@ -83,13 +83,13 @@ def _consume_errback(data):
     consume()
 
 def _setup_logging():
-    logging.basicConfig(level=logging.DEBUG, filename='consumer.log', \
+    logging.basicConfig(level=logging.INFO, filename='consumer.log', \
         format='%(asctime)s - %(message)s ', datefmt=config.datefmt)
 
 def get_last(date):
     db.connect()
-    return models.Tweet.select()
-    # return models.Tweet.select().where(models.Tweet.created_date <= date).order_by(models.Tweet.created_date.desc()).limit(10)
+    # return models.Tweet.select()
+    return models.Tweet.select().where(models.Tweet.created_date <= date).order_by(models.Tweet.created_date.desc()).limit(10)
 
 class Server(WampServerProtocol):
 

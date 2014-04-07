@@ -13,8 +13,8 @@ class TwitterUser(webapp.db.Model):
     username = CharField()
     auth_token = CharField()
     auth_secret = CharField()
-    fname = CharField()
-    lname = CharField()
+    fname = CharField(null=True)
+    lname = CharField(null=True)
 
 #Helps pretty print the TwitterUser in the admin
 class TwitterUserAdmin(ModelAdmin):
