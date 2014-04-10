@@ -46,7 +46,7 @@
 
               <div class="navbar-right">
                 <ul class="nav navbar-nav">
-                  <li><a href="/login">Log in</a></li>
+                  <li><a href="/home">{% if user is not none %} {{ user.username }} {% else %} Log in {% endif %}</a></li>
                 </ul>
               </div>
             </div>

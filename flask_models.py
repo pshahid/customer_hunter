@@ -11,6 +11,7 @@ import webapp
 
 class TwitterUser(webapp.db.Model):
     username = CharField()
+    email = CharField()
     auth_token = CharField()
     auth_secret = CharField()
     fname = CharField(null=True)

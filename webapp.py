@@ -31,24 +31,26 @@ webapp.config.from_object(__name__)
 
 db = Database(webapp)
 
+#flask-peewee auth/admin junk
+auth = Auth(webapp, db)
+admin = Admin(webapp, auth)
+
 class TwitterUser(db.Model):
     username = CharField()
     auth_token = CharField()
     auth_secret = CharField()
     twitter_id = BigIntegerField()
+    email = CharField(null=True)
     fname = CharField(null=True, default="")
     lname = CharField(null=True, default="")
+    ml_user = ForeignKeyField(auth.User) 
 
 #Helps pretty print the TwitterUser in the admin
 class TwitterUserAdmin(ModelAdmin):
     columns = ('username', 'fname', 'lname')
 
-#flask-peewee auth/admin junk
-auth = Auth(webapp, db)
-admin = Admin(webapp, auth)
-
 class SignInForm(Form):
-    email = wtforms.TextField(validators=[validators.Length(min=6, max=35)])
+    username = wtforms.TextField(validators=[validators.Length(min=2, max=35)])
     password = wtforms.PasswordField('Password', [validators.Required()])
 
 
@@ -69,27 +71,32 @@ def not_found(error):
 def index():
     return render_template('index.html', title="Sample Flask App", content="Hello there adventurer!")
 
-@webapp.route('/authed')
+@webapp.route('/home')
 @auth.login_required
-def auth_area():
+def home():
     user = auth.get_logged_in_user()
 
-    return "Hello logged in user!"
-
-@webapp.route('/login', methods=['GET', 'POST'])
-def login():
-    form = SignInForm(request.form)
-
-    if request.method == 'POST' and form.validate():
-        return render_template('auth_main.html', username=request.form['email'], local=True)
-
-    return render_template('login.html', form=form)
+    if user is not None:
+        return render_template('auth_main.html', username=user.username, local=True)
 
 @webapp.route('/logout')
 def logout():
     return render_template('index.html', title='ML Systems')
 
+@webapp.route('/addtwitter')
+@auth.login_required
+def add_twitter():
+    user = auth.get_logged_in_user()
+    accounts = TwitterUser.select().where(TwitterUser.ml_user == user.id)
+    twitter_accounts = []
+
+    for acc in accounts:
+        twitter_accounts.append(acc)
+
+    return render_template('account.html', username=user.username, accounts=twitter_accounts)
+
 @webapp.route('/twitter_login')
+@auth.login_required
 def auth_to_twitter():
     print request.cookies
     #step 1
@@ -102,6 +109,7 @@ def auth_to_twitter():
     return redirect(auth_url)
 
 @webapp.route('/callback')
+@auth.login_required
 def callback():
     #Gotta rebuild the session for step 3
     twitter = OAuth1Session(CLIENT_KEY, client_secret=CLIENT_SECRET)
@@ -113,17 +121,18 @@ def callback():
         twitter_id= token['user_id']
         
         user = TwitterUser.get(TwitterUser.twitter_id == twitter_id)
-
+        mluser = auth.get_logged_in_user()
         user.auth_token = token['oauth_token']
         user.auth_secret = token['oauth_token_secret']
+        user.ml_user = mluser
         user.save()
-        content='Welcome back, ' + token['screen_name']
     except DoesNotExist:
-        user = TwitterUser(username=token['screen_name'], twitter_id=token['user_id'], auth_secret=token['oauth_token_secret'], auth_token=token['oauth_token'])
+        mluser = auth.get_logged_in_user()
+        print mluser
+        user = TwitterUser(username=token['screen_name'], twitter_id=token['user_id'], auth_secret=token['oauth_token_secret'], auth_token=token['oauth_token'], ml_user=mluser.id)
         user.save()
-        content = 'Welcome to ML Systems, you\'ve added ' + token['screen_name'] + ' as a Twitter account.'
 
-    return render_template('index.html', title='Logged in', content=content)
+    return render_template('auth_main.html', username=user.username, local=True)
 
 if __name__ == '__main__':
     init_db()

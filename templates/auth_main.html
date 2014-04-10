@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-carousel.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ml.css') }}">
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.4.1/css/ionicons.min.css">
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
@@ -167,7 +168,24 @@
 
               <div class="navbar-right">
                 <ul class="nav navbar-nav">
-                  <li><a href="/logout"> {{ username }} </a></li>
+                  <li>
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0);">{{ username }}
+                        <span class="ion-arrow-down-b"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="/addtwitter"><span class="ion-plus-round"></span> &nbsp;&nbsp;Add Twitter Accounts</a></li>
+                        <li role="presentation" class="divider"></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:void(0);"><span class="ion-ios7-gear"></span> &nbsp;&nbsp;Account Settings</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:void(0);"><span class="ion-paper-airplane"></span> &nbsp;&nbsp;Feedback</a></li>
+
+
+                    </ul>
+                  </li>
+                  <li>
+                    <a class="ml-logout-link" href="{{ url_for('auth.logout') }}">
+                        <span id="ml-logout-icon" class="ion-log-out"></span>
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>

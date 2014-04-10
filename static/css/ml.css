@@ -9,3 +9,21 @@
 #stream {
 	margin-top:71px;
 }
+
+.ml-logout-link {
+	width:40px;
+	height:50px;
+}
+
+.ml-account-dropdown-link {
+	width: 20px;
+	height: 20px;
+}
+
+#ml-twitter-icon {
+	font-size: 16px;
+}
+
+#ml-logout-icon {
+	font-size:23px;
+}
