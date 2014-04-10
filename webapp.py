@@ -69,7 +69,7 @@ def not_found(error):
 
 @webapp.route('/')
 def index():
-    return render_template('index.html', title="Sample Flask App", content="Hello there adventurer!")
+    return render_template('index.html', title="ML Systems")
 
 @webapp.route('/home')
 @auth.login_required
@@ -110,27 +110,27 @@ def auth_to_twitter():
 @webapp.route('/callback')
 @auth.login_required
 def callback():
+    print "Callback hit"
     #Gotta rebuild the session for step 3
     twitter = OAuth1Session(CLIENT_KEY, client_secret=CLIENT_SECRET)
     twitter.parse_authorization_response(request.url)
     #Step 3
     token = twitter.fetch_access_token('https://api.twitter.com/oauth/access_token')
+    mluser = auth.get_logged_in_user()
 
     try:
         twitter_id= token['user_id']
         
         user = TwitterUser.get(TwitterUser.twitter_id == twitter_id)
-        mluser = auth.get_logged_in_user()
         user.auth_token = token['oauth_token']
         user.auth_secret = token['oauth_token_secret']
         user.ml_user = mluser
         user.save()
     except DoesNotExist:
-        mluser = auth.get_logged_in_user()
         user = TwitterUser(username=token['screen_name'], twitter_id=token['user_id'], auth_secret=token['oauth_token_secret'], auth_token=token['oauth_token'], ml_user=mluser.id)
         user.save()
 
-    return render_template('auth_main.html', username=user.username, local=config.debug)
+    return render_template('auth_main.html', username=mluser.username, local=config.debug)
 
 if __name__ == '__main__':
     init_db()
