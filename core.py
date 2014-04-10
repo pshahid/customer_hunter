@@ -21,7 +21,7 @@ bounding_box = config.bounding_box
 api_kwargs = config.oauth
 consumer = consumer.TwitterConsumer(api_kwargs, filters=filters, bounding_box=bounding_box)
 
-db = MySQLDatabase("social_consumer", user="root", passwd="")
+db = MySQLDatabase("social_consumer", user=config.user, passwd=config.password)
 
 # factory = build_server_factory()
 

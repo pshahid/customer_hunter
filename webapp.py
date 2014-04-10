@@ -22,8 +22,8 @@ os.environ['DEBUG'] = "1"
 DATABASE = {
     'name': 'social_consumer',
     'engine': 'peewee.MySQLDatabase',
-    'user': 'root',
-    'passwd': ''
+    'user': config.user,
+    'passwd': config.password
 }
 
 webapp = Flask(__name__)
@@ -77,7 +77,7 @@ def home():
     user = auth.get_logged_in_user()
 
     if user is not None:
-        return render_template('auth_main.html', username=user.username, local=True)
+        return render_template('auth_main.html', username=user.username, local=config.debug)
 
 @webapp.route('/logout')
 def logout():
@@ -98,7 +98,6 @@ def add_twitter():
 @webapp.route('/twitter_login')
 @auth.login_required
 def auth_to_twitter():
-    print request.cookies
     #step 1
     twitter = OAuth1Session(CLIENT_KEY, client_secret=CLIENT_SECRET, callback_uri=config.callback_uri)
     fetch_response = twitter.fetch_request_token('https://api.twitter.com/oauth/request_token')
@@ -128,11 +127,10 @@ def callback():
         user.save()
     except DoesNotExist:
         mluser = auth.get_logged_in_user()
-        print mluser
         user = TwitterUser(username=token['screen_name'], twitter_id=token['user_id'], auth_secret=token['oauth_token_secret'], auth_token=token['oauth_token'], ml_user=mluser.id)
         user.save()
 
-    return render_template('auth_main.html', username=user.username, local=True)
+    return render_template('auth_main.html', username=user.username, local=config.debug)
 
 if __name__ == '__main__':
     init_db()
