@@ -100,7 +100,7 @@ def add_twitter():
 def auth_to_twitter():
     print request.cookies
     #step 1
-    twitter = OAuth1Session(CLIENT_KEY, client_secret=CLIENT_SECRET, callback_uri='http://127.0.0.1:5000/callback')
+    twitter = OAuth1Session(CLIENT_KEY, client_secret=CLIENT_SECRET, callback_uri=config.callback_uri)
     fetch_response = twitter.fetch_request_token('https://api.twitter.com/oauth/request_token')
 
     #step 2 Could also be sent to /oauth/authorize

@@ -12,6 +12,7 @@ oauth = {
 	'access_key': '',
 	'access_secret': ''
 }
+callback_uri = 'http://mlsystems.io/callback'
 
 #Database
 db = "social_consumer"
