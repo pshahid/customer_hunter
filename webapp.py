@@ -97,7 +97,69 @@ def add_twitter():
     for acc in accounts:
         twitter_accounts.append(acc)
 
-    return render_template('account.html', username=user.username, accounts=twitter_accounts)
+    return render_template('social_account.html', username=user.username, accounts=twitter_accounts)
+
+@webapp.route('/account')
+@auth.login_required
+def account():
+    user = auth.get_logged_in_user()
+    try:
+        acct = auth.User.get(auth.User.id == user.id)
+    except DoesNotExist:
+        print "User does not exist"
+    else:
+        return render_template('account.html', title='ML Account', account=acct, user=user, username=user.username)
+
+@webapp.route('/change_acct_cred', methods=['POST', 'GET'])
+@auth.login_required
+def change_cred():
+    user = auth.get_logged_in_user()
+    try:
+        acct = auth.User.get(auth.User.id == user.id)
+
+        if request.method == 'POST':
+            change_acct_cred(request.form, user)
+
+    except DoesNotExist:
+        print "User doesn't exist...you shouldn't be seeing this often"
+    finally:
+        return redirect('account')
+
+def change_acct_cred(form, user):
+    #Don't do anything if the user is None or False
+    if user:
+        print form
+
+        change_password(user, form['old_password'], form['new_password'], form['confirm_new_password'])
+        change_username(user, form['username'])
+        change_email(user, form['new_email'])
+
+        user.save()
+
+def change_password(user, old, new, confirm):
+    if len(old) > 0:
+        usr = auth.authenticate(user.username, old)
+
+        if len(new) > 0 and usr:
+            if new == confirm and new != old:
+                user.set_password(new)
+
+def change_username(user, new):
+    if user:
+        if user.username != new:
+            try:
+                auth.User.get(auth.User.username == new)
+            except DoesNotExist:
+                #This is good, we want this
+                user.username = new
+
+def change_email(user, email):
+    if user:
+        if user.email != email and len(email) > 0:
+            try:
+                auth.User.get(auth.User.email == email)
+            except DoesNotExist:
+                user.email = email
 
 @webapp.route('/twitter_login')
 @auth.login_required
@@ -114,7 +176,6 @@ def auth_to_twitter():
 @webapp.route('/callback')
 @auth.login_required
 def callback():
-    print "Callback hit"
     #Gotta rebuild the session for step 3
     twitter = OAuth1Session(CLIENT_KEY, client_secret=CLIENT_SECRET)
     twitter.parse_authorization_response(request.url)

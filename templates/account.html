@@ -36,7 +36,7 @@
 
             <div class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
-                <li class="active"><a href="/">Home</a></li>
+                <li><a href="/home">Home</a></li>
                 <li><a href="/">About</a></li>
                 <li><a href="/">Contact us</a></li>
               </ul>
@@ -50,10 +50,8 @@
                     <ul class="dropdown-menu">
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="/addtwitter"><span class="ion-plus-round"></span> &nbsp;&nbsp;Add Twitter Accounts</a></li>
                         <li role="presentation" class="divider"></li>
-                        <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:void(0);"><span class="ion-ios7-gear"></span> &nbsp;&nbsp;Account Settings</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="/account"><span class="ion-ios7-gear"></span> &nbsp;&nbsp;Account Settings</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:void(0);"><span class="ion-paper-airplane"></span> &nbsp;&nbsp;Feedback</a></li>
-
-
                     </ul>
                   </li>
                   <li>
@@ -64,23 +62,42 @@
                 </ul>
               </div>
             </div>
-          
-          </div>
-        </div>
-        <div class="container" style="margin-top: 50px;">
-	    	<h2>Add Twitter Accounts</h2>
-	    	<div style="border-top: 1px solid #ccc;">
-	    		<ul class="list-unstyled">
-	    		<div style="margin-top:20px;">
-	    		{% for acc in accounts %}
-	    			<li>{{ acc.username }}</li>
-	    		{% else %}
-	    			No associated Twitter accounts.	    			
-	    		{% endfor %}
-	    		</ul>
-	    		</div>
-				<a href="/twitter_login" class="btn btn-primary" role="button">Add Twitter Account</a>
-	    	</div>
-    	</div>
+          </div> <!--//end nav container -->
+        </div> 
+            <div class="container">
+                <div class="col-lg-4 ml-container">
+
+                    <form class="form" role="form" action="/change_acct_cred" method="post">
+                        <h2>Your account</h2>
+                        <div class="input-group-lg">
+                            <div class="form-group">
+                                <label for="usernameInput">Username</label>
+                                <input id="usernameInput" type="text" name="username" class="form-control input-lg" placeholder="Change username" value="{{ username }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="passwordInput">Password</label>
+                                <input id="passwordInput" name="old_password" type="password" class="form-control input-lg" placeholder="Old password">
+                            </div>
+                             <div class="form-group">
+                                <input type="password" name="new_password" class="form-control input-lg" placeholder="New password">
+                            </div>
+                             <div class="form-group">
+                                <input type="password" name="confirm_new_password" class="form-control input-lg" placeholder="Confirm password">
+                            </div>
+                            <div class="form-group">
+                                <label for="currentEmail">Email</label>
+                                <input id="currentEmail" type="email" name="current_email" class="form-control input-lg" readonly value=" {{ account.email }} ">
+                            </div>
+                            <div class="form-group">
+                                <input type="email" name="new_email" placeholder="New email" class="form-control input-lg">
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-lg btn-primary">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+    </div>
     </body>
 </html>
