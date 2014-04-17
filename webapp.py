@@ -128,8 +128,6 @@ def change_cred():
 def change_acct_cred(form, user):
     #Don't do anything if the user is None or False
     if user:
-        print form
-
         change_password(user, form['old_password'], form['new_password'], form['confirm_new_password'])
         change_username(user, form['username'])
         change_email(user, form['new_email'])
