@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-carousel.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ml.css') }}">
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.4.1/css/ionicons.min.css">
 
     <style type="text/css"></style><style id="holderjs-style" type="text/css"></style>
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -34,12 +35,12 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="">ML Systems</a>
+              <a class="navbar-brand" href="/">ML Systems</a>
             </div>
 
             <div class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
-                <li class="active"><a href="">Home</a></li>
+                <li class="active"><a href="/home">Home</a></li>
                 <li><a href="">About</a></li>
                 <li><a href="">Contact us</a></li>
               </ul>
@@ -47,6 +48,11 @@
               <div class="navbar-right">
                 <ul class="nav navbar-nav">
                   <li><a href="/home">{% if user is not none %} {{ user.username }} {% else %} Log in {% endif %}</a></li>
+                  <li>
+                    <a class="ml-logout-link" href="{{ url_for('auth.logout') }}">
+                        <span id="ml-logout-icon" class="ion-log-out"></span>
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>

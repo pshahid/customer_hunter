@@ -25,14 +25,15 @@
             var blinkerInterval = null,
                 windowFocus = true,
                 scrollTimeout = null,
-                local = true == {{ local|tojson|safe }};
+                local = true == {{ local|tojson|safe }},
+                scrollable = true;
 
             $(document).ready(function() {
                 $(window).focus(function() {
                     clearInterval(blinkerInterval);
                     windowFocus = true;
                     blinkerInterval = null;
-                    $("title").text("Live View");
+                    $("title").text("ML Systems");
                 });
 
                 $(window).blur(function() {
@@ -40,25 +41,28 @@
                 });
 
                 $(document).scroll(function() {
-                    clearTimeout(scrollTimeout);
-                    scrollTimeout = setTimeout(function() {
+                    if (scrollable === true) {
+                        clearTimeout(scrollTimeout);
+                        scrollTimeout = setTimeout(function() {
 
-                        var currentPos = $(window).scrollTop() + $(window).height();
+                            var currentPos = $(window).scrollTop() + $(window).height();
 
-                        if (currentPos >= $(document).height()) {
-                            //This jquery gives us the the date/time of the last element on the page ;)
-                            //Will need to be updated though according to the structure of the tweets so this isn't a
-                            //best-practice since it's coupled tightly
-                            var date = new Date(Date.parse($("#stream ol li:last-child h4 small").html()));
-                            getSomeTweets(date.toISOString(), false);
-                            
-                        }
-                    }, 100);
+                            if (currentPos >= $(document).height()) {
+                                //This jquery gives us the the date/time of the last element on the page ;)
+                                //Will need to be updated though according to the structure of the tweets so this isn't a
+                                //best-practice since it's coupled tightly
+                                var date = new Date(Date.parse($("#stream ol li:last-child h4 small").html()));
+                                scrollable = false;
+                                getSomeTweets(date.toISOString(), false);
+                                
+                            }
+                        }, 100);
+                    }
                 });
 
                 var wsUrl = "ws://localhost:9001";
                 if (!local) {
-                    wsUrl = "ws://sugar.appendixg.com/wamp";
+                    wsUrl = "ws://mlsystems.io/wamp";
                 }
 
                 ab.connect(wsUrl, function(session) {
@@ -79,12 +83,14 @@
                 if (typeof date === "undefined" || date === null) {
                     date = new Date().toISOString();
                 }
+                console.log("Calling server for more tweets");
 
                 window.wssession.call('#getInit', date).then(
                     function(result) {
                         console.log("Got getSomeTweets result");
                         console.log(result);
                         if ("push" in result) {
+                            scrollable = true;
                             for (var i=0; i<result.length;i++) {
                                 tweet = JSON.parse(result[i].replace(/'/g, '"'));
                                 tweet['text'] = tweet['message'];
@@ -99,6 +105,7 @@
                     function(error) {console.log(error);}
                 );
             }
+
             function topicActivity(topic, event) {
                 event = JSON.parse(event);
                 console.log(event);
@@ -112,18 +119,24 @@
                 var children = $("#stream ol").children().length;
                 
                 if (children >= 10 && prepend === true) {
-                    console.log("Removin some shit");
+                    // console.log("Removin some shit");
                     $("#stream ol li:last-child").remove();
                 }
 
                 var html = '' +
-                '<li id="' + tweet['twitter_id'] + '">' +
+                '<div class="row">' +
+                '<li class="col-md-4" id="' + tweet['twitter_id'] + '">' +
+                '   <div class="ml-trainer" id="' + tweet['twitter_id'] + '_trainer">' +
+                '       <a id="' + tweet['twitter_id'] + '-link-good" href="javascript:void(0);"><span class="ion-checkmark"></span></a>' +
+                '       <a id="' + tweet['twitter_id'] + '-link-bad" href="javascript:void(0);"><span class="ion-close"></span></a>' + 
+                '   </div>' +
                 '   <div id="' + tweet['twitter_id'] + '_div" style="border-bottom: 1px solid #ccc;">' +
                 '       <h4>' + tweet['username'] + '</h4>'+ 
                 '       <p>' + tweet['text'] + '</p>' + 
                 '       <a href="http://twitter.com/' + tweet['username'] + '/status/' + tweet['twitter_id'] + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(tweet['created_date'] + " GMT")).toLocaleString() + '</small></h4></div>' +
                 '   </div>' +
-                '</li>';
+                '</li>' + 
+                '</div>';
 
                 if (prepend === false) {
                     $("#stream ol").append(html);
@@ -131,14 +144,24 @@
                     $("#stream ol").prepend(html);
                 }
                 
+                $('#' + tweet['twitter_id'] + '-link-good').click(function(e, evt) {
+                    $('#' + tweet['twitter_id'] + '-link-good span').css('opacity', 0.9);
+                    window.wssession.call('#acceptable', tweet['twitter_id']);
+                });
+
+                $('#' + tweet['twitter_id'] + '-link-bad').click(function(e, evt) {
+                    $('#' + tweet['twitter_id'] + '-link-bad span').css('opacity', 0.9);
+                    window.wssession.call('#unacceptable', tweet['twitter_id']);
+                });
+
                 // $("#" + tweet['twitter_id'] + "_div").fadeIn();
             }
 
             function changeTitle() {
                 if (blinkerInterval !== null && windowFocus === false) {
-                    document.title = document.title == "Live View" ? "Activity!" : "Live View";
+                    document.title = document.title == "ML Systems" ? "Activity!" : "ML Systems";
                 } else {
-                    document.title = "Live View";
+                    document.title = "ML Systems";
                 } 
             }
         </script>
@@ -156,12 +179,12 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="">ML Systems</a>
+              <a class="navbar-brand" href="/">ML Systems</a>
             </div>
 
             <div class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
-                <li class="active"><a href="/">Home</a></li>
+                <li class="active"><a href="/home">Home</a></li>
                 <li><a href="/">About</a></li>
                 <li><a href="/">Contact us</a></li>
               </ul>
@@ -177,8 +200,6 @@
                         <li role="presentation" class="divider"></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:void(0);"><span class="ion-ios7-gear"></span> &nbsp;&nbsp;Account Settings</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:void(0);"><span class="ion-paper-airplane"></span> &nbsp;&nbsp;Feedback</a></li>
-
-
                     </ul>
                   </li>
                   <li>

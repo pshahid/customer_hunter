@@ -9,7 +9,7 @@ import webapp
     #     database = MySQLDatabase(config.db, user=config.user, passwd=config.password)
 
 
-class TwitterUser(webapp.db.Model):
+class TwitterUser(webapp.MySQLModel):
     username = CharField()
     email = CharField()
     auth_token = CharField()

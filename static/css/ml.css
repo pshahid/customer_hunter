@@ -27,3 +27,27 @@
 #ml-logout-icon {
 	font-size:23px;
 }
+
+.ml-trainer {
+	display: inline;
+	float: left;
+	width: 25px;
+	height: 81px;
+	padding-top: 10px;
+	padding-right: 5px;
+}
+
+.ml-trainer a {
+	font-size: 12pt;
+	display:block;
+	color: black;
+}
+
+.ml-trainer span:hover {
+	opacity: 0.9;
+}
+
+.ml-trainer span {
+	/*display: none;*/
+	opacity: 0.4;
+}

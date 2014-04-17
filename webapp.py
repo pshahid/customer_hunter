@@ -35,6 +35,10 @@ db = Database(webapp)
 auth = Auth(webapp, db)
 admin = Admin(webapp, auth)
 
+# class MySQLModel(db.Model):
+#     class Meta:
+#         database = MySQLDatabase('social_consumer', user=config.user, passwd=config.password)
+
 class TwitterUser(db.Model):
     username = CharField()
     auth_token = CharField()

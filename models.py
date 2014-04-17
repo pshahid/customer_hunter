@@ -2,6 +2,8 @@ from peewee import *
 import datetime
 import config
 
+# mysql_db = 
+
 class MySQLModel(Model):
     class Meta:
         database = MySQLDatabase('social_consumer', user=config.user, passwd=config.password)
@@ -31,3 +33,4 @@ class Tweet(MySQLModel):
     username = CharField()
     logit_prediction = BigIntegerField(default=-1)
     sgd_prediction = BigIntegerField(default=-1)
+    prediction_label = IntegerField(default=-1, null=False)
