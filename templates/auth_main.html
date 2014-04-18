@@ -30,10 +30,13 @@
 
             $(document).ready(function() {
                 getTimelines(function(data) {
-                    console.log("Got timelines");
-                    console.log(data);
-                    for(var i=0; i<data['125708842'].statuses.length;i++) {
-                        addTweet(JSON.parse(data['125708842'].statuses[i]), false, '#timelines');
+                    for (var prop in data) {
+                        if (data.hasOwnProperty(prop)) {
+                            for(var i=0; i < data[prop].statuses.length;i++) {
+                                addTweet(JSON.parse(data[prop].statuses[i]), false, "#timelines");
+                            }
+                        }
+
                     }
                 });
                 $(window).focus(function() {
