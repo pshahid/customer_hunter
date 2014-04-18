@@ -50,7 +50,9 @@
                   <li><a href="/home">{% if user is not none %} {{ user.username }} {% else %} Log in {% endif %}</a></li>
                   <li>
                     <a class="ml-logout-link" href="{{ url_for('auth.logout') }}">
+                        {% if user %}
                         <span id="ml-logout-icon" class="ion-log-out"></span>
+                        {% endif %}
                     </a>
                   </li>
                 </ul>

@@ -29,6 +29,13 @@
                 scrollable = true;
 
             $(document).ready(function() {
+                getTimelines(function(data) {
+                    console.log("Got timelines");
+                    console.log(data);
+                    for(var i=0; i<data['125708842'].statuses.length;i++) {
+                        addTweet(JSON.parse(data['125708842'].statuses[i]), false, '#timelines');
+                    }
+                });
                 $(window).focus(function() {
                     clearInterval(blinkerInterval);
                     windowFocus = true;
@@ -94,7 +101,7 @@
                             for (var i=0; i<result.length;i++) {
                                 tweet = JSON.parse(result[i].replace(/'/g, '"'));
                                 tweet['text'] = tweet['message'];
-                                addTweet(tweet, prepend);
+                                addTweet(tweet, prepend, "#stream", true);
                             }
                         } else {
                             console.log("Uhh it's not an array....");
@@ -115,33 +122,48 @@
                 }
             }
 
-            function addTweet(tweet, prepend) {
-                var children = $("#stream ol").children().length;
+            function addTweet(tweet, prepend, div, training) {
+                if (!div) {
+                    div = "#stream";
+                }
+
+                if (typeof training === "undefined" || training === null) {
+                    training = false;
+                }
+
+                var children = $(div + " ol").children().length;
                 
                 if (children >= 10 && prepend === true) {
                     // console.log("Removin some shit");
                     $("#stream ol li:last-child").remove();
                 }
 
+                var username = tweet.hasOwnProperty('username') ? tweet['username'] : tweet['user']['screen_name'],
+                    id = tweet.hasOwnProperty('twitter_id') ? tweet['twitter_id'] : tweet['id'];
                 var html = '' +
                 '<div class="row">' +
-                '<li class="col-md-4" id="' + tweet['twitter_id'] + '">' +
-                '   <div class="ml-trainer" id="' + tweet['twitter_id'] + '_trainer">' +
-                '       <a id="' + tweet['twitter_id'] + '-link-good" href="javascript:void(0);"><span class="ion-checkmark"></span></a>' +
-                '       <a id="' + tweet['twitter_id'] + '-link-bad" href="javascript:void(0);"><span class="ion-close"></span></a>' + 
-                '   </div>' +
+                '<li id="' + id + '">';
+
+                if (training === true) {
+                    html += '   <div class="ml-trainer" id="' + id + '_trainer">' +
+                    '       <a id="' + id + '-link-good" href="javascript:void(0);"><span class="ion-checkmark"></span></a>' +
+                    '       <a id="' + id + '-link-bad" href="javascript:void(0);"><span class="ion-close"></span></a>' + 
+                    '   </div>';
+                }
+
+                html += '' + 
                 '   <div id="' + tweet['twitter_id'] + '_div" style="border-bottom: 1px solid #ccc;">' +
-                '       <h4>' + tweet['username'] + '</h4>'+ 
+                '       <h4>' + username + '</h4>'+ 
                 '       <p>' + tweet['text'] + '</p>' + 
-                '       <a href="http://twitter.com/' + tweet['username'] + '/status/' + tweet['twitter_id'] + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(tweet['created_date'] + " GMT")).toLocaleString() + '</small></h4></div>' +
+                '       <a href="http://twitter.com/' + username + '/status/' + id + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(tweet['created_date'] + " GMT")).toLocaleString() + '</small></h4></div>' +
                 '   </div>' +
-                '</li>' + 
+                '</li>' +
                 '</div>';
 
                 if (prepend === false) {
-                    $("#stream ol").append(html);
+                    $(div + " ol").append(html);
                 } else {
-                    $("#stream ol").prepend(html);
+                    $(div + " ol").prepend(html);
                 }
                 
                 $('#' + tweet['twitter_id'] + '-link-good').click(function(e, evt) {
@@ -163,6 +185,25 @@
                 } else {
                     document.title = "ML Systems";
                 } 
+            }
+
+            function getTimelines(cb) {
+                var url;
+                if (local) {
+                    url='http://localhost:5000/gettimelines';
+                } else {
+                    url = 'http://mlsystems.io/gettimelines';
+                }
+
+                $.ajax({
+                    url: url,
+                    accepts: '*/*'
+                }).done(function(data) {
+                    cb(JSON.parse(data));
+                }).fail(function(error) {
+                    console.log("Error");
+                    console.log(error);
+                });
             }
         </script>
 
@@ -215,20 +256,26 @@
 
         </div>
         <div class="container">
+
             <div class="ml-container">
-                <div id="stream">
-                    <ol class="list-unstyled">
-                    </ol>
-                </div>
-                <div id="timelines">
-                    <ol class="list-unstyled">
-                    </ol>
-                </div>
-                <div id="saved-searches">
-                    <ol class="list-unstyled">
-                    </ol>
+                <div class="row">
+                    <div id="stream" class="col-md-4" style="border: 1px solid #ccc; padding: 0px 25px 0px 25px;">
+                        <h3>ML Stream</h3>
+                        <ol class="list-unstyled">
+                        </ol>
+                    </div>
+                    <div id="timelines" class="col-md-4" style="margin-left: 20px; border: 1px solid #ccc; padding: 0px 25px 0px 25px;">
+                        <h3>Your timelines</h3>
+                        <ol class="list-unstyled">
+                        </ol>
+                    </div>
+                    <div id="saved-searches" class="col-md-4 col-md-offset-8">
+                        <ol class="list-unstyled">
+                        </ol>
+                    </div>
                 </div>
             </div>
+
         </div>
       </div>
 

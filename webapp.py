@@ -10,6 +10,8 @@ from peewee import *
 import config 
 import os
 import sys
+import json
+import twitter
 # import flask_models
 
 SECRET_KEY = 'wasdfasdfat'
@@ -47,7 +49,7 @@ class TwitterUser(db.Model):
     email = CharField(null=True)
     fname = CharField(null=True, default="")
     lname = CharField(null=True, default="")
-    ml_user = ForeignKeyField(auth.User) 
+    ml_user = ForeignKeyField(auth.User, related_name='ml_user_id') 
 
 #Helps pretty print the TwitterUser in the admin
 class TwitterUserAdmin(ModelAdmin):
@@ -190,10 +192,55 @@ def callback():
         user.ml_user = mluser
         user.save()
     except DoesNotExist:
-        user = TwitterUser(username=token['screen_name'], twitter_id=token['user_id'], auth_secret=token['oauth_token_secret'], auth_token=token['oauth_token'], ml_user=mluser.id)
+        creds = get_twitter_user(token['oauth_token'],token['oauth_token_secret'])
+        name = creds['name'].split()
+        user = TwitterUser(username=token['screen_name'],\
+            twitter_id=token['user_id'],\
+            auth_secret=token['oauth_token_secret'],\
+            auth_token=token['oauth_token'],\
+            ml_user=mluser.id,\
+            fname=name[0],\
+            lname=name[1])
         user.save()
 
     return render_template('auth_main.html', username=mluser.username, local=config.debug)
+
+def get_twitter_user(oauth_token, oauth_secret):
+    api_inst = twitter.Api(consumer_key=config.oauth['api_key'], \
+        consumer_secret=config.oauth['api_secret'],\
+        access_token_key=oauth_token,\
+        access_token_secret=oauth_secret)
+
+    return api_inst.VerifyCredentials()
+
+@webapp.route('/gettimelines')
+@auth.login_required
+def get_timelines():
+    user = auth.get_logged_in_user()
+
+    tusers = [tuser for tuser in user.ml_user_id]
+
+    if len(tusers) > 0:
+        statuses = {}
+        api_inst = {}
+        for tuser in tusers:
+            api_inst[tuser.twitter_id] = twitter.Api(consumer_key=config.oauth['api_key'], \
+                consumer_secret=config.oauth['api_secret'],\
+                access_token_key=tuser.auth_token,\
+                access_token_secret=tuser.auth_secret)
+
+            statuses[tuser.twitter_id] = {'username': tuser.username}
+
+        for tid,api in api_inst.iteritems():
+            s = [status.AsJsonString() for status in api.GetHomeTimeline(count=200)]
+            statuses[tid].update(statuses=s)
+
+        return json.dumps(statuses)
+    else:
+        print "Can't find that twitter user"
+        return json.dumps({'error': 'Forbidden'})
+
+
 
 if __name__ == '__main__':
     init_db()

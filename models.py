@@ -34,3 +34,12 @@ class Tweet(MySQLModel):
     logit_prediction = BigIntegerField(default=-1)
     sgd_prediction = BigIntegerField(default=-1)
     prediction_label = IntegerField(default=-1, null=False)
+
+class TrainedTweets(MySQLModel):
+    ml_tweet_id = ForeignKeyField(Tweet, related_name='tweet')
+    sgd_prediction = IntegerField(default=-1)
+    logit_prediction = IntegerField(default=-1)
+    prediction_label = IntegerField(default=-1)
+
+class Tweet2(MySQLModel):
+    pass
