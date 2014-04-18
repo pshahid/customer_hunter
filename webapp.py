@@ -240,6 +240,29 @@ def get_timelines():
         print "Can't find that twitter user"
         return json.dumps({'error': 'Forbidden'})
 
+@webapp.route('/replyas/<id>', methods=['POST'])
+@auth.login_required
+def reply_as():
+    '''
+    Reply to a post with the given twitter id
+    '''
+    if request.method == 'GET':
+        return json.dumps({'error': '400'})
+
+    print request.data
+    user = auth.get_logged_in_user()
+
+    tusers = [tuser for tuser in user.ml_user_id]
+
+    return json.dumps({'success': '200'})
+
+@webapp.route('/postas/<id>', methods=['POST'])
+@auth.login_required
+def post_as():
+    '''
+    Make a post with a given twitter id
+    '''
+    pass
 
 
 if __name__ == '__main__':
