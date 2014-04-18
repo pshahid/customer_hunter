@@ -240,7 +240,7 @@ def get_timelines():
         print "Can't find that twitter user"
         return json.dumps({'error': 'Forbidden'})
 
-@webapp.route('/replyas/<id>', methods=['POST'])
+@webapp.route('/reply', methods=['POST'])
 @auth.login_required
 def reply_as():
     '''
