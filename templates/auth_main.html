@@ -142,7 +142,8 @@
                 }
 
                 var username = tweet.hasOwnProperty('username') ? tweet['username'] : tweet['user']['screen_name'],
-                    id = tweet.hasOwnProperty('twitter_id') ? tweet['twitter_id'] : tweet['id'];
+                    id = tweet.hasOwnProperty('twitter_id') ? tweet['twitter_id'] : tweet['id'],
+                    date = tweet.hasOwnProperty('created_date') ? tweet['created_date'] : tweet['created_at'];
                 var html = '' +
                 '<div class="row">' +
                 '<li id="' + id + '">';
@@ -158,7 +159,7 @@
                 '   <div id="' + tweet['twitter_id'] + '_div" style="border-bottom: 1px solid #ccc;">' +
                 '       <h4>' + username + '</h4>'+ 
                 '       <p>' + tweet['text'] + '</p>' + 
-                '       <a href="http://twitter.com/' + username + '/status/' + id + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(tweet['created_date'] + " GMT")).toLocaleString() + '</small></h4></div>' +
+                '       <a href="http://twitter.com/' + username + '/status/' + id + '" target="_blank"> Link to Tweet</a><div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(date + " GMT")).toLocaleString() + '</small></h4></div>' +
                 '   </div>' +
                 '</li>' +
                 '</div>';
