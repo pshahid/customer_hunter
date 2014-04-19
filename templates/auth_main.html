@@ -19,21 +19,26 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/autobahn.js') }}"></script>
-
+    <script type="text/javascript" src="{{ url_for('static', filename='js/handlebars-v1.3.0.js') }}"></script>
         <script>
             window.wssession = null;
             var blinkerInterval = null,
                 windowFocus = true,
                 scrollTimeout = null,
                 local = true == {{ local|tojson|safe }},
-                scrollable = true;
+                scrollable = true,
+                _tmpl_cache = {};
 
             $(document).ready(function() {
+                getHbsTemplate('SocialDocument');
+                getHbsTemplate('ReplyTo');
+                getHbsTemplate('SocialTrainer');
+
                 getTimelines(function(data) {
                     for (var prop in data) {
                         if (data.hasOwnProperty(prop)) {
                             for(var i=0; i < data[prop].statuses.length;i++) {
-                                addTweet(JSON.parse(data[prop].statuses[i]), false, "#timelines");
+                                addTweet(data[prop].statuses[i], false, "#timelines");
                             }
                         }
 
@@ -137,47 +142,45 @@
                 var children = $(div + " ol").children().length;
                 
                 if (children >= 10 && prepend === true) {
-                    // console.log("Removin some shit");
                     $("#stream ol li:last-child").remove();
                 }
-
+                // console.log(tweet);
                 var username = tweet.hasOwnProperty('username') ? tweet['username'] : tweet['user']['screen_name'],
-                    id = tweet.hasOwnProperty('twitter_id') ? tweet['twitter_id'] : tweet['id'],
-                    date = tweet.hasOwnProperty('created_date') ? tweet['created_date'] : tweet['created_at'];
-                var html = '' +
-                '<div id="row-' + id + '" class="row ml-tweet-row">' +
-                '<li id="' + id + '">';
+                    id = tweet.hasOwnProperty('twitter_id') ? tweet['twitter_id'] : tweet['idstr'],
+                    date = tweet.hasOwnProperty('created_date') ? tweet['created_date'] : tweet['created_at'],
+                    msg = tweet.hasOwnProperty('text') ? tweet['text'] : tweet['message'];
 
-                if (training === true) {
-                    html += '   <div class="ml-trainer" id="' + id + '_trainer">' +
-                    '       <a id="' + id + '-link-good" href="javascript:void(0);"><span class="ion-checkmark"></span></a>' +
-                    '       <a id="' + id + '-link-bad" href="javascript:void(0);"><span class="ion-close"></span></a>' + 
-                    '   </div>';
-                }
-
-                html += '' + 
-                '   <div id="' + tweet['twitter_id'] + '_div">' +
-                '       <h4>' + username + '</h4>'+ 
-                '       <p>' + tweet['text'] + '</p>' + 
-                '       <a href="http://twitter.com/' + username + '/status/' + id + '" target="_blank"> Link to Tweet </a>&nbsp;&nbsp;' + 
-                '       <a id="reply-to-' + id + '" href="javascript:void(0);" class="ml-reply-link"><span class="ion-ios7-undo"> Reply</span></a>' +
-                '<div style="display: inline; margin-left: 18px;"><h4 style="display: inline;"><small>' + new Date(Date.parse(date + " GMT")).toLocaleString() + '</small></h4></div>' +
-                '   </div>' +
-                '</li>' +
-                '<div id="hidden-reply-to-' + id +'" style="display: none; border-top: solid 1px #ccc">' +
-                '   <textarea id="reply-to-textarea-' + id + '" class="form-control" rows="3" placeholder="Reply to this status"></textarea>' +
-                '   <div>' +
-                '       <span id="char-count-reply-' + id +'"></span>' +
-                '       <button id="reply-to-button-' + id + '" type="button" class="btn btn-primary button-inline"><span class="ion-ios7-paperplane-outline" style="font-size: 18pt;"></span></button>' +
-                '   </div>' +
-                '</div>' +
-                '</div>';
+                var html = getHbsTemplate('SocialDocument'),
+                    template = Handlebars.compile(html),
+                    context = {
+                        id: id,
+                        twitter_id: id,
+                        date: new Date(Date.parse(date + " GMT")).toLocaleString(),
+                        text: msg,
+                        username: username
+                    };
 
                 if (prepend === false) {
-                    $(div + " ol").append(html);
+                    $(div + " ol").append(template(context));
                 } else {
-                    $(div + " ol").prepend(html);
+                    $(div + " ol").prepend(template(context));
                 }
+
+                if (training === true && ($('li#' + id +' .ml-trainer').length == 0)) {
+                    var trainTemplate = Handlebars.compile(getHbsTemplate('SocialTrainer'));
+                    $('li#' + id).prepend(trainTemplate({twitter_id: id}));
+                }
+
+                // '<div id="hidden-reply-to-' + id +'" style="display: none; border-top: solid 1px #ccc">' +
+                // '   <textarea id="reply-to-textarea-' + id + '" class="form-control" rows="3" placeholder="Reply to this status"></textarea>' +
+                // '   <div>' +
+                // '       <span id="char-count-reply-' + id +'"></span>' +
+                // '       <button id="reply-to-button-' + id + '" type="button" class="btn btn-primary button-inline"><span class="ion-ios7-paperplane-outline" style="font-size: 18pt;"></span></button>' +
+                // '   </div>' +
+                // '</div>' +
+                // '</div>';
+
+
                 
                 $('#' + tweet['twitter_id'] + '-link-good').click(function(e, evt) {
                     $('#' + tweet['twitter_id'] + '-link-good span').css('opacity', 0.9);
@@ -241,6 +244,7 @@
                     url: url,
                     accepts: '*/*'
                 }).done(function(data) {
+                    console.log(JSON.parse(data));
                     cb(JSON.parse(data));
                 }).fail(function(error) {
                     console.log("Error");
@@ -249,10 +253,44 @@
             }
 
             function replyToTweet(id) {
+                var x = $('#SocialDocument').html();
+                return x;
+            }
 
+            function getHbsTemplate(name) {
+                if (name in _tmpl_cache) {
+                    return _tmpl_cache[name];
+                }
+
+                var url;
+
+                if (local) {
+                    url = 'http://localhost:5000/static/partials/' + name + '.html';
+                } else {
+                    url = 'http://mlsystems.io/static/partials/' + name + '.html';
+                }
+
+                var tmpl_string;
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    async: false,
+                    success: function(data) {
+                        console.log("Got template:");
+                        console.log(data);
+                        tmpl_string = data;
+                    }
+                });
+
+                if (tmpl_string) {
+                    _tmpl_cache[name] = tmpl_string;
+
+                    return tmpl_string;
+                } else {
+                    return "";
+                }
             }
         </script>
-
     </head>
     <body style="">
 
@@ -306,12 +344,12 @@
             <div class="ml-container">
                 <div class="row">
                     <div id="stream" class="col-md-4 ml-stream-container" style=" ">
-                        <h3 style="padding-left: 45px;">ML Stream</h3>
+                        <h3 style="padding-left: 10px;">ML Stream</h3>
                         <ol class="list-unstyled">
                         </ol>
                     </div>
                     <div id="timelines" class="col-md-4 ml-stream-container" style="margin-left: 20px;">
-                        <h3 style="padding-left: 25px;">Your timelines</h3>
+                        <h3 style="padding-left: 5px;">Your timelines</h3>
                         <ol class="list-unstyled">
                         </ol>
                     </div>

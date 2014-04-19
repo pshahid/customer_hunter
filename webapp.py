@@ -12,6 +12,7 @@ import os
 import sys
 import json
 import twitter
+import simplejson
 # import flask_models
 
 SECRET_KEY = 'wasdfasdfat'
@@ -232,10 +233,18 @@ def get_timelines():
             statuses[tuser.twitter_id] = {'username': tuser.username}
 
         for tid,api in api_inst.iteritems():
-            s = [status.AsJsonString() for status in api.GetHomeTimeline(count=200)]
-            statuses[tid].update(statuses=s)
+            s = [status for status in api.GetHomeTimeline(count=20)]
 
-        return json.dumps(statuses)
+            #Because we don't have idstr as part of that dictionary, apparently...stupid
+            sdicts = []
+            for status in s:
+                d = status.AsDict()
+                d.update(idstr=str(status.GetId()))
+                sdicts.append(d)
+
+            statuses[tid].update(statuses=sdicts)
+
+        return simplejson.dumps(statuses)
     else:
         print "Can't find that twitter user"
         return json.dumps({'error': 'Forbidden'})
