@@ -1,0 +1,32 @@
+<!-- We use stream.name -->
+<!-- 
+doc.idstr
+doc.created_at
+doc.user.name
+doc.user.screen_name
+doc.text
+-->
+<div class="span5 col-xs-4 ml-stream-container" ng-repeat="stream in streams">
+    	<h3 style="padding-left: 10px;">{{stream.name}}</h3>
+    <div style="padding-top: 30px;">
+    <ol class="list-unstyled">
+		<div id="row-{{doc.idstr}}" class="row ml-tweet-row" ng-repeat="doc in stream.statuses">
+		    <li id="{{doc.idstr}}">
+		        <div id="{{doc.idstr}}_div">
+		            <h4>@{{doc.user.screen_name}}</h4> 
+		            <p>{{doc.text}}</p>
+		            <a href="http://twitter.com/{{doc.user.name}}/status/{{doc.idstr}}" target="_blank"> Link to Tweet </a>&nbsp;&nbsp;
+		            <a id="reply-to-{{doc.idstr}}" href="javascript:void(0);" class="ml-reply-link">
+		                <span class="ion-ios7-undo"> Reply</span>
+		            </a>
+		            <div style="display: inline; margin-left: 18px;">
+		                <h4 style="display: inline;">
+		                    <small>{{doc.created_at}}</small>
+		                </h4>
+		            </div>
+		        </div>
+		    </li>
+		</div>
+    </ol>
+    </div>
+</div>

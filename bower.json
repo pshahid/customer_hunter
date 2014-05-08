@@ -1,0 +1,14 @@
+{
+  "name": "customer_hunter",
+  "description": "A project that looks for potential customers in social media",
+  "version": "0.0.0",
+  "homepage": "https://github.com/angular/customer_hunter",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "1.2.x",
+    "angular-route": "1.2.x",
+    "angular-loader": "1.2.x",
+    "angular-mocks": "~1.2.15"
+  }
+}

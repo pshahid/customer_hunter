@@ -3,7 +3,7 @@ from peewee import *
 import argparse
 import sys
 sys.path.append('/Users/paul/repos/customer_hunter')
-import customer_hunter
+# import customer_hunter
 # print sys.path
 # sys.exit(0)
 dbconn = MySQLDatabase("social_consumer", user="root")
@@ -19,17 +19,27 @@ def read_from_db(fname, start_id=0, total=-1):
         csv_writer = csv.writer(f, dialect='excel')
 
         iterator = None
+        print "Importing models"
 
+        from models import Tweet
         if total > -1:
             iterator = Tweet.select().where( (Tweet.id>=start_id) & (Tweet.id < (Tweet.id + total))).iterator()
         else:
             iterator = Tweet.select().where((Tweet.id>=start_id)).iterator()
         
+        print "Created iterator"
+        print iterator
+
         for tweet in iterator:
             row = []
             row.append('')
             row.append(tweet.message.encode('ascii', 'ignore'))
             row.append(tweet.id)
+            # row.append(tweet.created_date)
+            # row.append(tweet.latitude)
+            # row.append(tweet.longitude)
+            # row.append(tweet.logit_prediction)
+            # row.append(tweet.sgd_prediction)
 
             csv_writer.writerow(row)
 

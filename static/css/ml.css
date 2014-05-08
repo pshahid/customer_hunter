@@ -8,12 +8,21 @@
 
 .ml-container {
 	margin-top:71px;
+	overflow-x: auto;
+	padding-left: 15px;
+	white-space: nowrap;
 }
 
 .ml-stream-container {
 	height: 800px;
 	overflow-y: scroll;
 	border: 1px solid #ccc;
+	display: inline-block;
+	white-space: normal;
+	float: none;
+}
+
+.ml-stream-container [class*="span"] {
 }
 
 #stream {

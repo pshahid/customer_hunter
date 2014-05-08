@@ -29,7 +29,7 @@ DATABASE = {
     'passwd': config.password
 }
 
-webapp = Flask(__name__)
+webapp = Flask(__name__, static_folder='static', static_url_path='')
 webapp.config.from_object(__name__)
 
 db = Database(webapp)
@@ -272,7 +272,6 @@ def post_as():
     Make a post with a given twitter id
     '''
     pass
-
 
 if __name__ == '__main__':
     init_db()

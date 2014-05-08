@@ -1,0 +1,17 @@
+<div id="row-{{doc.twitter_id}}" class="row ml-tweet-row" ng-repeat="doc in social_docs">
+    <li id="{{doc.twitter_id}}">
+        <div id="{{doc.twitter_id}}_div">
+            <h4>{{doc.username}}</h4> 
+            <p>{{doc.message}}</p>
+            <a href="http://twitter.com/{{doc.username}}/status/{{doc.twitter_id}}" target="_blank"> Link to Tweet </a>&nbsp;&nbsp;
+            <a id="reply-to-{{doc.twitter_id}}" href="javascript:void(0);" class="ml-reply-link">
+                <span class="ion-ios7-undo"> Reply</span>
+            </a>
+            <div style="display: inline; margin-left: 18px;">
+                <h4 style="display: inline;">
+                    <small>{{doc.created_date}}</small>
+                </h4>
+            </div>
+        </div>
+    </li>
+</div>
