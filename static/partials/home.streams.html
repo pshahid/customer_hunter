@@ -7,7 +7,7 @@ doc.user.screen_name
 doc.text
 -->
 <div class="span5 col-xs-4 ml-stream-container" ng-repeat="stream in streams">
-    	<h3 style="padding-left: 10px;">{{stream.name}}</h3>
+    	<h3 style="padding-left: 10px;">{{stream.name}} <a ng-click="newStatus($event, stream.id)"><span class="ion-compose"></span></a></h3>
     <div style="padding-top: 30px;">
     <ol class="list-unstyled">
 		<div id="row-{{doc.idstr}}" class="row ml-tweet-row" ng-repeat="doc in stream.statuses">
@@ -15,11 +15,25 @@ doc.text
 		        <div id="{{doc.idstr}}_div">
 		            <h4>@{{doc.user.screen_name}}</h4> 
 		            <p>{{doc.text}}</p>
-		            <a href="http://twitter.com/{{doc.user.name}}/status/{{doc.idstr}}" target="_blank"> Link to Tweet </a>&nbsp;&nbsp;
-		            <a id="reply-to-{{doc.idstr}}" href="javascript:void(0);" class="ml-reply-link">
-		                <span class="ion-ios7-undo"> Reply</span>
-		            </a>
-		            <div style="display: inline; margin-left: 18px;">
+
+		            <div class="ml-twitter-controls">
+			            <div class="ml-favorite-link ml-interact-link">
+			            	<a href="javascript:void(0);" class="ml-interact-link">
+			            		<span class="ion-heart"></span>
+			            	</a>
+			            </div>
+			            <div class="ml-reply-link ml-interact-link">
+			            	<a href="" ng-click="reply($event, doc.user, doc.idstr, stream.id)" class="ml-interact-link">
+			            		<span class="ion-reply"></span>
+			            	</a>
+			            </div>
+			            <div class="ml-retweet-link ml-interact-link">
+			            	<a class="ml-interact-link">
+			            		<span class="ion-loop"></span>
+			            	</a>
+			            </div>
+		            </div>
+		            <div style="display: inline; margin-left: 10px;">
 		                <h4 style="display: inline;">
 		                    <small>{{doc.created_at}}</small>
 		                </h4>

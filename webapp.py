@@ -249,7 +249,7 @@ def get_timelines():
         print "Can't find that twitter user"
         return json.dumps({'error': 'Forbidden'})
 
-@webapp.route('/reply', methods=['POST'])
+@webapp.route('/update', methods=['POST'])
 @auth.login_required
 def reply_as():
     '''
@@ -258,10 +258,26 @@ def reply_as():
     if request.method == 'GET':
         return json.dumps({'error': '400'})
 
-    print request.data
     user = auth.get_logged_in_user()
+    if user is not None:
+        tusers = [tuser for tuser in user.ml_user_id]
 
-    tusers = [tuser for tuser in user.ml_user_id]
+        d = simplejson.loads(request.data)
+        
+        for u in tusers:
+            if str(u.twitter_id) == d['sender']:
+                api_inst = twitter.Api(\
+                consumer_key=config.oauth['api_key'], \
+                consumer_secret=config.oauth['api_secret'],\
+                access_token_key=u.auth_token,\
+                access_token_secret=u.auth_secret)
+
+                if 'reply_id' in d:
+                    # print 'Replying to ' + d['reply_id'] + ' from ' + d['sender']
+                    api_inst.PostUpdate(d['message'], in_reply_to_status_id=d['reply_id'])
+                else:
+                    # print 'New post from ' + d['sender']
+                    api_inst.PostUpdate(d['message'])
 
     return json.dumps({'success': '200'})
 

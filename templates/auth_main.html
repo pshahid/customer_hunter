@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-carousel.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ml.css') }}">
     <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.4.1/css/ionicons.min.css">
+    <script type="text/javascript">
+        var ml_username = '{{user.username}}';
+    </script>
     </head>
     <body style="">
 
@@ -40,6 +43,8 @@
     <script src="{{ url_for('static', filename='js/angular-route.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/angular-ui-router.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/angular-strap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/angular-strap.tpl.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/mlApp.js') }}"></script>
     <script src="{{ url_for('static', filename='js/controllers.js') }}"></script>

@@ -1,7 +1,22 @@
-<div id="hidden-reply-to-{{twitter_id}}" style="display: none; border-top: solid 1px #ccc">
-	<textarea id="reply-to-textarea-{{twitter_id}}" class="form-control" rows="3" placeholder="Reply to this status"></textarea>
-	<div>
-		<span id="char-count-reply-{{twitter_id}}"></span>
-        <button id="reply-to-button-{{twitter_id}}" type="button" class="btn btn-primary button-inline"><span class="ion-ios7-paperplane-outline" style="font-size: 18pt;"></span></button>' +
+<div class="modal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+			    <button type="button" class="close" ng-click="$hide()" aria-hidden="true">&times;</button>
+        		<h4 class="modal-title">{{title}}</h4>
+        	</div>
+        	<div class="modal-body">
+				<div id="reply">
+					<textarea id="reply-to-textarea" class="form-control" rows="3" placeholder="Reply to this status" ng-model="replyContent" ng-maxlength="140"></textarea>
+					<div>
+						<span id="char-count-reply"><bold>{{replyContent.length}}</bold></span>
+					</div>
+				</div>
+			</div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" ng-click="$hide()">Close</button>
+	        <button type="button" class="btn btn-primary" ng-click="sendReply($event, replyContent)">Reply!</button>
+	      </div>
+		</div>
 	</div>
 </div>
