@@ -1,0 +1,22 @@
+<div class="modal">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+			    <button type="button" class="close" ng-click="$hide()" aria-hidden="true">&times;</button>
+        		<h4 class="modal-title">New Tweet</h4>
+        	</div>
+        	<div class="modal-body">
+				<div id="reply">
+					<textarea class="form-control" rows="3" placeholder="New status..." ng-model="newContent"></textarea>
+					<div>
+						<span id="char-count-new-status">{{replyContent.length}}</span>
+					</div>
+				</div>
+			</div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" ng-click="$hide()">Close</button>
+	        <button type="button" class="btn btn-primary" ng-click="sendUpdate($event, newContent)">Tweet</button>
+	      </div>
+		</div>
+	</div>
+</div>
