@@ -72,8 +72,6 @@ def _consume_callback(tweet):
             new_tweet.logit_prediction = int(predictions['logit'][0])
             new_tweet.sgd_prediction = int(predictions['sgd'][0])
 
-            print(predictions)
-
         if int(predictions['logit'][0]) == 1 and int(predictions['sgd'][0]) == 1:
             factory.dispatch(config.wamp_topic, json.dumps(tweet))
         
@@ -83,7 +81,7 @@ def _consume_callback(tweet):
 
 def _consume_errback(data):
     print "ERRORBACK"
-    print data
+    log.msg('Errback triggered: ' + str(data))
     consume()
 
 def _setup_logging():
@@ -122,10 +120,9 @@ class Server(WampServerProtocol):
             tid = int(tweet_id)
             t = models.Tweet.get(models.Tweet.twitter_id == tid)
         except DoesNotExist:
-            print "Trying to get a tweet that doesn't exist " + str(tid)
+            log.msg("Attempting to train from a tweet that doesn't exist. TID: " + str(tid))
         except AttributeError:
-            print 'AttributeError'
-            print sys.exc_info()[0]
+            log.msg('AttributeError: ' + str(sys.exc_info()[0]))
         else:
             t.prediction_label = 1
             t.save()
@@ -135,10 +132,9 @@ class Server(WampServerProtocol):
             tid = int(tweet_id)
             t = models.Tweet.get(models.Tweet.twitter_id == tid)
         except DoesNotExist:
-            print "Trying to get a tweet that doesn't exist " + str(tid)
+            log.msg("Attempting to train from a tweet that doesn't exist. TID: " + str(tid))
         except AttributeError:
-            print 'AttributeError'
-            print sys.exc_info()[0]
+            log.msg('AttributeError: ' + str(sys.exc_info()[0]))
         else:
             t.prediction_label = 0
             t.save()
@@ -149,7 +145,7 @@ class Server(WampServerProtocol):
         self.registerMethodForRpc('#acceptable', self, Server.register_acceptable)
         self.registerMethodForRpc('#unacceptable', self, Server.register_unacceptable)
 
-log.startLogging(sys.stdout)
+log.startLogging(open('./twisted-output.log', 'w'))
 factory = WampServerFactory("ws://" + config.domain + "/wamp")
 factory.protocol = Server
 factory.setProtocolOptions(allowHixie76 = True)
@@ -162,6 +158,9 @@ if __name__ == "__main__":
     modeler_inst.load_test()
 
     reactor.callWhenRunning(start)
+    def before_shutdown():
+        log.msg('Shutting down')
+    reactor.addSystemEventTrigger('before', 'shutdown', before_shutdown)
     listenWS(factory)
     reactor.run()
     # try:
