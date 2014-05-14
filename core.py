@@ -5,10 +5,11 @@ import config
 import os
 from twisted.internet import defer, threads, reactor
 from twisted.internet.task import LoopingCall
-from autobahn.twisted.websocket import listenWS
-from autobahn.wamp1.protocol import exportPub, exportRpc, WampServerFactory, WampServerProtocol
 from twisted.python import log
+from autobahn.wamp1.protocol import WampClientProtocol, WampClientFactory
+from autobahn.twisted.websocket import connectWS
 from peewee import *
+from pymongo import MongoClient
 import models
 import modeler
 import consumer
@@ -23,6 +24,27 @@ consumer = consumer.TwitterConsumer(api_kwargs, filters=filters, bounding_box=bo
 
 db = MySQLDatabase("social_consumer", user=config.user, passwd=config.password)
 
+mongo_db = MongoClient()
+
+class ClientContainer(object):
+    """
+    Adapter/container for the WAMP client, essentially keeps us 
+    from using global variables all the time.
+
+    """
+    WAMPClient = None
+
+    def setClient(self, c):
+        self.WAMPClient = c
+
+    def sendSocialData(self, data):
+        self.WAMPClient.sendSocialData(data)
+
+client = ClientContainer()
+
+def setClient(c):
+    client.WAMPClient = c
+
 def init_db():
     db.connect()
     models.Tweet.create_table(fail_silently=True)
@@ -30,8 +52,9 @@ def init_db():
 def start():    
     consumer.start()
     consume()
+
     def ping_broadcast():
-        factory.dispatch(config.wamp_topic, json.dumps({"ping": ""}))
+        client.sendSocialData(json.dumps({"ping": ""}))
     
     lc = LoopingCall(ping_broadcast)
     lc.start(300)
@@ -72,15 +95,19 @@ def _consume_callback(tweet):
             new_tweet.logit_prediction = int(predictions['logit'][0])
             new_tweet.sgd_prediction = int(predictions['sgd'][0])
 
+            tweet['logit_prediction'] = int(predictions['logit'][0])
+            tweet['sgd_prediction'] = int(predictions['sgd'][0])
+
         if int(predictions['logit'][0]) == 1 and int(predictions['sgd'][0]) == 1:
-            factory.dispatch(config.wamp_topic, json.dumps(tweet))
+            client.sendSocialData(json.dumps(tweet))
         
         new_tweet.save()
+
+        mongo_db.social_consumer.tweets.insert(tweet)
 
     consume()
 
 def _consume_errback(data):
-    print "ERRORBACK"
     log.msg('Errback triggered: ' + str(data))
     consume()
 
@@ -88,67 +115,20 @@ def _setup_logging():
     logging.basicConfig(level=logging.INFO, filename='consumer.log', \
         format='%(asctime)s - %(message)s ', datefmt=config.datefmt)
 
-def get_last(date):
-    db.connect()
-    # return models.Tweet.select()
-    return models.Tweet.select().where( \
-        (models.Tweet.created_date <= date) & \
-        ((models.Tweet.prediction_label == 1) | \
-        ((models.Tweet.sgd_prediction == 1) & models.Tweet.logit_prediction == 1))).order_by(models.Tweet.created_date.desc()).limit(10)
-
-class Server(WampServerProtocol):
-
-    def getInit(self, date):
-        try:
-            if date is None or date == '':
-                parsed_date = datetime.datetime.now()
-            else:
-                parsed_date = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%fZ')
-
-            obj = get_last(parsed_date)
-            tweets = [str(tweet) for tweet in obj]
-        except ValueError:
-            log.msg(sys.exc_info()[1])
-            return 'Error: That date was not parseable.'
-        except:
-            log.msg(sys.exc_info()[1])
-        else:
-            return tweets
-
-    def register_acceptable(self, tweet_id):
-        try:
-            tid = int(tweet_id)
-            t = models.Tweet.get(models.Tweet.twitter_id == tid)
-        except DoesNotExist:
-            log.msg("Attempting to train from a tweet that doesn't exist. TID: " + str(tid))
-        except AttributeError:
-            log.msg('AttributeError: ' + str(sys.exc_info()[0]))
-        else:
-            t.prediction_label = 1
-            t.save()
-
-    def register_unacceptable(self, tweet_id):
-        try:
-            tid = int(tweet_id)
-            t = models.Tweet.get(models.Tweet.twitter_id == tid)
-        except DoesNotExist:
-            log.msg("Attempting to train from a tweet that doesn't exist. TID: " + str(tid))
-        except AttributeError:
-            log.msg('AttributeError: ' + str(sys.exc_info()[0]))
-        else:
-            t.prediction_label = 0
-            t.save()
-
+class Client(WampClientProtocol):
+    """
+    Client for the WAMP server. Every time a consumer reports back
+    with data it will call sendSocialData(), which will transmit data
+    over a network connection on localhost to the server, which will
+    broadcast out to connected web clients.
+    """
     def onSessionOpen(self):
-        self.registerForPubSub(config.wamp_topic)
-        self.registerMethodForRpc("#getInit", self, Server.getInit)
-        self.registerMethodForRpc('#acceptable', self, Server.register_acceptable)
-        self.registerMethodForRpc('#unacceptable', self, Server.register_unacceptable)
+        factory.client = self
+        client.setClient(self)
+        start()
 
-log.startLogging(open('./twisted-output.log', 'w'))
-factory = WampServerFactory("ws://" + config.domain + "/wamp")
-factory.protocol = Server
-factory.setProtocolOptions(allowHixie76 = True)
+    def sendSocialData(self, data):
+        self.publish(config.wamp_topic, data)
 
 if __name__ == "__main__":
     _setup_logging()
@@ -157,20 +137,18 @@ if __name__ == "__main__":
     modeler_inst.load_training()
     modeler_inst.load_test()
 
-    reactor.callWhenRunning(start)
+    # Listen on the WAMP server port and domain
+    factory = WampClientFactory('ws://' + config.domain)
+    factory.protocol = Client
+    connectWS(factory)
+
     def before_shutdown():
         log.msg('Shutting down')
-    reactor.addSystemEventTrigger('before', 'shutdown', before_shutdown)
-    listenWS(factory)
-    reactor.run()
-    # try:
-    #     reactor.run()
-    # except KeyboardInterrupt:
-    #     stop()
-    #     sys.exit(0)
-    # except:
-    #     print(sys.exc_info()[1])
-    #     logging.warning(sys.exc_info()[1])
 
-    #     stop()
-    #     sys.exit(0)
+    def after_shutdown():
+        sys.exit(0)
+
+    reactor.addSystemEventTrigger('before', 'shutdown', before_shutdown)
+    reactor.addSystemEventTrigger('after', 'shutdown', after_shutdown)
+    
+    reactor.run()

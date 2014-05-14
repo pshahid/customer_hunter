@@ -7,7 +7,7 @@ doc.user.screen_name
 doc.text
 -->
 <div class="span5 col-xs-4 ml-stream-container" ng-repeat="stream in streams">
-    	<h3 style="padding-left: 10px;">{{stream.name}} <a ng-click="newStatus($event, stream.id)"><span class="ion-compose"></span></a></h3>
+    	<h3 style="padding-left: 10px;">{{stream.name}} <a class="ml-interact-link" ng-click="newStatus($event, stream.id)"><span class="ion-compose ml-interact-link"></span></a></h3>
     <div style="padding-top: 30px;">
     <ol class="list-unstyled">
 		<div id="row-{{doc.idstr}}" class="row ml-tweet-row" ng-repeat="doc in stream.statuses">

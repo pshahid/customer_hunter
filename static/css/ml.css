@@ -49,6 +49,7 @@
 
 .ml-interact-link a:hover {
 	text-decoration: none;
+	cursor: pointer;
 }
 
 .ml-interact-link {

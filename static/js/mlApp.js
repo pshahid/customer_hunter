@@ -46,12 +46,41 @@ var myApp = angular.module('mlApp', [
                 }, 1000);
                 return deferred.promise;
             },
+            ml_mongo_stream: function($q, $rootScope, $http, $timeout) {
+                var deferred = $q.defer();
+
+                $timeout(function() {
+                    $rootScope.wssession.call('#getInitMongo').then(
+                        function(result) {
+                            console.log('Got mongo result');
+                            // console.log(result);
+                            var res = JSON.parse(result);
+
+                            console.log('Parsed mongo output:');
+                            console.log(res);
+                            
+                            deferred.resolve(res);
+                            $rootScope.$apply();
+                        },
+                        function(error) {
+                            console.log('Got mongo error');
+                            console.log(error);
+                            
+                            deferred.reject(error);
+                            $rootScope.$apply();
+
+                        }
+                    );
+                }, 1000);
+
+                return deferred.promise;
+            },
             timelines: function($http) {
                 return $http.get('/gettimelines');
             }
         },
 
-        controller: function($scope, $state, $rootScope, $modal, $http, ml_stream, timelines) {
+        controller: function($scope, $state, $rootScope, $modal, $http, ml_stream, ml_mongo_stream, timelines) {
             $scope.ml_username = ml_username;
 
             streams = {};
@@ -156,7 +185,7 @@ myApp.run(['$rootScope', '$state', function($rootScope, $state) {
     console.log("Running");
 
     var wssession;
-    var wsUrl = 'ws://localhost:9001/wamp';
+    var wsUrl = 'ws://mlsystems.io/wamp';
 
     ab.connect(wsUrl, function(session) {
         $rootScope.wssession = session;
