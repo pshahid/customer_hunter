@@ -204,7 +204,7 @@ def callback():
             lname=name[1])
         user.save()
 
-    return render_template('auth_main.html', username=mluser.username, local=config.debug)
+    return render_template('auth_main.html', username=mluser.username, local=config.debug, wamp_url=config.wamp_url)
 
 def get_twitter_user(oauth_token, oauth_secret):
     api_inst = twitter.Api(consumer_key=config.oauth['api_key'], \

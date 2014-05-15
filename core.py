@@ -21,7 +21,7 @@ bounding_box = config.bounding_box
 api_kwargs = config.oauth
 consumer = consumer.TwitterConsumer(api_kwargs, filters=filters, bounding_box=bounding_box)
 
-db = MySQLDatabase("social_consumer", user=config.user, passwd=config.password)
+db = MySQLDatabase("social_consumer", user=config.user, passwd=config.password, threadlocals=True)
 
 def init_db():
     db.connect()

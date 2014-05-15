@@ -34,6 +34,7 @@ var myApp = angular.module('mlApp', [
                             }, results);
 
                             deferred.resolve(results);
+                            console.log(results);
                             console.log("Returning initial results");
                             $rootScope.$apply();
                         },
@@ -156,8 +157,8 @@ myApp.run(['$rootScope', '$state', function($rootScope, $state) {
     console.log("Running");
 
     var wssession;
-    var wsUrl = 'ws://localhost:9001/wamp';
-
+    var wsUrl = 'ws://' + window.location.host + '/wamp';
+    console.log(wsUrl);
     ab.connect(wsUrl, function(session) {
         $rootScope.wssession = session;
         
