@@ -35,7 +35,16 @@ class Server(WampServerProtocol):
             return tweets
 
     def getInitMongo(self):
-        return dumps(get_last_mongo())
+        json_string = ''
+
+        try:
+            json_string = dumps(get_last_mongo())
+        except:
+            log.msg('Tried to do the thing')
+            log.msg(sys.exc_info()[0])
+            log.msg(sys.exc_info()[1])
+        else:
+            return json_string
 
     def register_acceptable(self, tweet_id):
         try:
@@ -86,7 +95,7 @@ def init_db():
 if __name__ == '__main__':
     init_db()
     log.startLogging(open('./twisted-output.log', 'w'))
-    factory = WampServerFactory("ws://" + config.domain + "/wamp")
+    factory = WampServerFactory("ws://" + config.domain + ":9001/wamp")
     factory.protocol = Server
     factory.setProtocolOptions(allowHixie76 = True)
     listenWS(factory)

@@ -12,77 +12,15 @@ var myApp = angular.module('mlApp', [
         url: '/',
         templateUrl: '/partials/home.streams.html',
         resolve: {
-            ml_stream: function($q, $rootScope, $http, $timeout) {
-
-                var deferred = $q.defer();
-  
-                $timeout(function() {
-                    var date;
-
-                    if (typeof date === "undefined" || date === null) {
-                        date = new Date().toISOString();
-                    }
-
-                    $rootScope.wssession.call('#getInit', date).then(
-                        function(result) {
-                            var results = [];
-                            console.log("Got initial results");
-                            angular.forEach(result, function(value, key) {
-
-                                this.push(JSON.parse(value.replace(/'/g, '"')));
-                            
-                            }, results);
-
-                            deferred.resolve(results);
-                            console.log("Returning initial results");
-                            $rootScope.$apply();
-                        },
-                        function(error) {
-                            console.log(error);
-                            deferred.reject(error);
-                            $rootScope.$apply();
-                        }
-                    );
-                }, 1000);
-                return deferred.promise;
-            },
-            ml_mongo_stream: function($q, $rootScope, $http, $timeout) {
-                var deferred = $q.defer();
-
-                $timeout(function() {
-                    $rootScope.wssession.call('#getInitMongo').then(
-                        function(result) {
-                            console.log('Got mongo result');
-                            // console.log(result);
-                            var res = JSON.parse(result);
-
-                            console.log('Parsed mongo output:');
-                            console.log(res);
-                            
-                            deferred.resolve(res);
-                            $rootScope.$apply();
-                        },
-                        function(error) {
-                            console.log('Got mongo error');
-                            console.log(error);
-                            
-                            deferred.reject(error);
-                            $rootScope.$apply();
-
-                        }
-                    );
-                }, 1000);
-
-                return deferred.promise;
-            },
             timelines: function($http) {
                 return $http.get('/gettimelines');
             }
         },
 
-        controller: function($scope, $state, $rootScope, $modal, $http, ml_stream, ml_mongo_stream, timelines) {
+        controller: function($scope, $state, $rootScope, $modal, $http, timelines) {
             $scope.ml_username = ml_username;
-
+            console.log($rootScope.initialFeed);
+            var ml_stream = $rootScope.initialFeed;
             streams = {};
             streams['ml_stream'] = {'username': 'ML Stream'};
             
@@ -120,6 +58,8 @@ var myApp = angular.module('mlApp', [
 
                 if (!(data.hasOwnProperty('ping'))) {
                     $scope.streams['ml_stream'].statuses.unshift(data);
+                } else {
+                    console.log("Got ping from other side");
                 }
             });
 
@@ -181,30 +121,52 @@ var myApp = angular.module('mlApp', [
     });
 }]);
 
-myApp.run(['$rootScope', '$state', function($rootScope, $state) {
+myApp.run(['$rootScope', '$state', 'PushService', function($rootScope, $state, PushService) {
     console.log("Running");
 
-    var wssession;
-    var wsUrl = 'ws://mlsystems.io/wamp';
+    // var wssession;
+    // // var wsUrl = 'ws://mlsystems.io/wamp';
+    // var wsUrl = 'ws://localhost/wamp';
 
-    ab.connect(wsUrl, function(session) {
-        $rootScope.wssession = session;
+    // ab.connect(wsUrl, function(session) {
+    //     $rootScope.wssession = session;
         
-        $rootScope.wssession.subscribe('feed', function(chan, data) {
-            var obj = JSON.parse(data);
-            obj.created_at = new Date(obj.created_at)
-                .toUTCString()
-                .replace(' GMT', '');
+    //     $rootScope.wssession.subscribe('feed', function(chan, data) {
+    //         var obj = JSON.parse(data);
+    //         obj.created_at = new Date(obj.created_at)
+    //             .toUTCString()
+    //             .replace(' GMT', '');
 
-            $rootScope.$broadcast('ml_feed_update', obj);
-            $state.transitionTo('home');
-        });
-    }, function(code, reason,detail) {
-            console.log("WS connection attempt failed");
-            console.log(reason);
-    }, {
-        'maxRetries': 60,
-        'retryDelay': 2000
-    });
+    //         $rootScope.$broadcast('ml_feed_update', obj);
+    //         $state.transitionTo('home');
+    //     });
+    // }, function(code, reason,detail) {
+    //         console.log("WS connection attempt failed");
+    //         console.log(reason);
+    // }, {
+    //     'maxRetries': 60,
+    //     'retryDelay': 2000
+    // });
+    function broadcastOnActivity(chan, data) {
+        var obj = angular.fromJson(data);
 
+        $rootScope.$broadcast('ml_feed_update', obj);
+        $state.transitionTo('home');
+    }
+
+    PushService.subscribe('feed', broadcastOnActivity);
+
+    $rootScope.initialFeed = null;
+
+    PushService.getLatestML(
+        function(result) {
+            var results = angular.fromJson(result);
+
+            $rootScope.initialFeed = results;
+        },
+        function(error) {
+            console.log('Latest ml errback');
+            console.log(error);
+        }
+    );
 }]);

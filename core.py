@@ -57,6 +57,7 @@ def start():
         client.sendSocialData(json.dumps({"ping": ""}))
     
     lc = LoopingCall(ping_broadcast)
+    print "Starting ping looping call"
     lc.start(300)
 
 def stop():
@@ -125,6 +126,9 @@ class Client(WampClientProtocol):
     def onSessionOpen(self):
         factory.client = self
         client.setClient(self)
+
+        log.msg("Session opened")
+
         start()
 
     def sendSocialData(self, data):
@@ -138,7 +142,7 @@ if __name__ == "__main__":
     modeler_inst.load_test()
 
     # Listen on the WAMP server port and domain
-    factory = WampClientFactory('ws://' + config.domain)
+    factory = WampClientFactory('ws://' + config.domain + ':' + str(config.port))
     factory.protocol = Client
     connectWS(factory)
 
@@ -150,5 +154,4 @@ if __name__ == "__main__":
 
     reactor.addSystemEventTrigger('before', 'shutdown', before_shutdown)
     reactor.addSystemEventTrigger('after', 'shutdown', after_shutdown)
-    
     reactor.run()
