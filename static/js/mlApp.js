@@ -124,29 +124,6 @@ var myApp = angular.module('mlApp', [
 myApp.run(['$rootScope', '$state', 'PushService', function($rootScope, $state, PushService) {
     console.log("Running");
 
-    // var wssession;
-    // // var wsUrl = 'ws://mlsystems.io/wamp';
-    // var wsUrl = 'ws://localhost/wamp';
-
-    // ab.connect(wsUrl, function(session) {
-    //     $rootScope.wssession = session;
-        
-    //     $rootScope.wssession.subscribe('feed', function(chan, data) {
-    //         var obj = JSON.parse(data);
-    //         obj.created_at = new Date(obj.created_at)
-    //             .toUTCString()
-    //             .replace(' GMT', '');
-
-    //         $rootScope.$broadcast('ml_feed_update', obj);
-    //         $state.transitionTo('home');
-    //     });
-    // }, function(code, reason,detail) {
-    //         console.log("WS connection attempt failed");
-    //         console.log(reason);
-    // }, {
-    //     'maxRetries': 60,
-    //     'retryDelay': 2000
-    // });
     function broadcastOnActivity(chan, data) {
         var obj = angular.fromJson(data);
 
