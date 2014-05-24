@@ -27,7 +27,6 @@ myApp.service('PushService', ['$q', function($q) {
     this.subscribe = function(topic, callback) {
         if (isConnected()) {
             self.session.subscribe(topic, callback);
-            console.log("Subscribed!");
         } else {
             todoOnConnect.push({'action': 'subscribe', params: [topic, callback]});
         }
@@ -65,7 +64,6 @@ myApp.service('PushService', ['$q', function($q) {
         } else {
             todoOnConnect.push({action: 'publish', params: [data]})
         }
-        console.log("Publish!");
     };
 
     this.getLatestML = function(callback, errback) {
@@ -73,7 +71,6 @@ myApp.service('PushService', ['$q', function($q) {
     };
 
     function connectSuccess(session) {
-        console.log("Connected!");
 
         self.session = session;
         self.connected = true;
@@ -107,7 +104,6 @@ myApp.service('PushService', ['$q', function($q) {
                     self.session,
                     value.params
                 ).then(value.callbacks[0], value.callbacks[1]);
-                console.log('Did the RPC thing');
             }
 
         });

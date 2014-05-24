@@ -19,7 +19,7 @@ var myApp = angular.module('mlApp', [
 
         controller: function($scope, $state, $rootScope, $modal, $http, timelines) {
             $scope.ml_username = ml_username;
-            console.log($rootScope.initialFeed);
+
             var ml_stream = $rootScope.initialFeed;
             streams = {};
             streams['ml_stream'] = {'username': 'ML Stream'};
@@ -122,7 +122,6 @@ var myApp = angular.module('mlApp', [
 }]);
 
 myApp.run(['$rootScope', '$state', 'PushService', function($rootScope, $state, PushService) {
-    console.log("Running");
 
     function broadcastOnActivity(chan, data) {
         var obj = angular.fromJson(data);
