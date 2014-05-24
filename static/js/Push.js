@@ -4,7 +4,7 @@ myApp.service('PushService', ['$q', function($q) {
     ab._Deferred = $q.defer;
     var self = this;
 
-    var websocketUrl = 'ws://localhost/wamp',
+    var websocketUrl = 'ws://' + window.location.host + '/wamp',
 
         //Array of objects like {action: 'subscribe', params: [params]}
         todoOnConnect = [];
