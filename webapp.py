@@ -1,3 +1,9 @@
+from twisted.application import internet, service
+from twisted.internet import reactor
+from twisted.python.threadpool import ThreadPool
+from twisted.web.server import Site
+from twisted.web.static import File
+from twisted.web.wsgi import WSGIResource
 from flask_peewee.auth import Auth
 from flask_peewee.admin import Admin
 from flask_peewee.db import Database
@@ -29,18 +35,14 @@ DATABASE = {
     'passwd': config.password
 }
 
-webapp = Flask(__name__, static_folder='static', static_url_path='')
-webapp.config.from_object(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
+app.config.from_object(__name__)
 
-db = Database(webapp)
+db = Database(app)
 
 #flask-peewee auth/admin junk
-auth = Auth(webapp, db)
-admin = Admin(webapp, auth)
-
-# class MySQLModel(db.Model):
-#     class Meta:
-#         database = MySQLDatabase('social_consumer', user=config.user, passwd=config.password)
+auth = Auth(app, db)
+admin = Admin(app, auth)
 
 class TwitterUser(db.Model):
     username = CharField()
@@ -70,15 +72,21 @@ def init_db():
     TwitterUser.create_table(fail_silently=True)
     auth.User.create_table(fail_silently=True)
 
-@webapp.errorhandler(404)
+@app.errorhandler(404)
 def not_found(error):
     return "404 -- that's a paddlin'"
 
-@webapp.route('/')
+@app.route('/')
 def index():
-    return render_template('index.html', title="ML Systems")
+    try:
+        tmpl= render_template('index.html', title="ML Systems")
+    except:
+        print sys.exc_info()[0]
+        print sys.exc_info()[1]
+    else:
+        return tmpl
 
-@webapp.route('/home')
+@app.route('/home')
 @auth.login_required
 def home():
     user = auth.get_logged_in_user()
@@ -86,11 +94,11 @@ def home():
     if user is not None:
         return render_template('auth_main.html', username=user.username, local=config.debug)
 
-@webapp.route('/logout')
+@app.route('/logout')
 def logout():
     return render_template('index.html', title='ML Systems')
 
-@webapp.route('/addtwitter')
+@app.route('/addtwitter')
 @auth.login_required
 def add_twitter():
     user = auth.get_logged_in_user()
@@ -102,7 +110,7 @@ def add_twitter():
 
     return render_template('social_account.html', username=user.username, accounts=twitter_accounts)
 
-@webapp.route('/account')
+@app.route('/account')
 @auth.login_required
 def account():
     user = auth.get_logged_in_user()
@@ -113,7 +121,7 @@ def account():
     else:
         return render_template('account.html', title='ML Account', account=acct, user=user, username=user.username)
 
-@webapp.route('/change_acct_cred', methods=['POST', 'GET'])
+@app.route('/change_acct_cred', methods=['POST', 'GET'])
 @auth.login_required
 def change_cred():
     user = auth.get_logged_in_user()
@@ -162,7 +170,7 @@ def change_email(user, email):
             except DoesNotExist:
                 user.email = email
 
-@webapp.route('/twitter_login')
+@app.route('/twitter_login')
 @auth.login_required
 def auth_to_twitter():
     #step 1
@@ -174,7 +182,7 @@ def auth_to_twitter():
 
     return redirect(auth_url)
 
-@webapp.route('/callback')
+@app.route('/callback')
 @auth.login_required
 def callback():
     #Gotta rebuild the session for step 3
@@ -214,7 +222,7 @@ def get_twitter_user(oauth_token, oauth_secret):
 
     return api_inst.VerifyCredentials()
 
-@webapp.route('/gettimelines')
+@app.route('/gettimelines')
 @auth.login_required
 def get_timelines():
     user = auth.get_logged_in_user()
@@ -249,7 +257,7 @@ def get_timelines():
         print "Can't find that twitter user"
         return json.dumps({'error': 'Forbidden'})
 
-@webapp.route('/update', methods=['POST'])
+@app.route('/update', methods=['POST'])
 @auth.login_required
 def reply_as():
     '''
@@ -281,7 +289,7 @@ def reply_as():
 
     return json.dumps({'success': '200'})
 
-@webapp.route('/postas/<id>', methods=['POST'])
+@app.route('/postas/<id>', methods=['POST'])
 @auth.login_required
 def post_as():
     '''
@@ -289,7 +297,8 @@ def post_as():
     '''
     pass
 
-if __name__ == '__main__':
-    init_db()
-    init_admin()
-    webapp.run(port=5000, debug=True)
+#This will get called with twistd daemon
+init_db()
+init_admin()
+app.run(port=5000)
+
