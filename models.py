@@ -6,7 +6,7 @@ import config
 
 class MySQLModel(Model):
     class Meta:
-        database = MySQLDatabase('social_consumer', user=config.user, passwd=config.password)
+        database = MySQLDatabase('social_consumer', threadlocals=True, user=config.user, passwd=config.password)
 
     def __str__(self):
         r = {}

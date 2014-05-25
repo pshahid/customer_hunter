@@ -10,7 +10,7 @@ import sys
 import datetime
 from bson.json_util import dumps
 
-db = MySQLDatabase("social_consumer", user=config.user, passwd=config.password)
+db = MySQLDatabase("social_consumer", threadlocals=True, user=config.user, passwd=config.password)
 mongo_db = MongoClient()
 
 class Server(WampServerProtocol):

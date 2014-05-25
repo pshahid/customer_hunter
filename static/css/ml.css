@@ -2,13 +2,21 @@
 	/*float: right;*/
 }
 
+::-webkit-scrollbar {
+	/*display: none;*/
+	overflow:hidden;
+}
+
+::-webkit-scrollbar:hover {
+	overflow:auto;
+}
+
 #ml-nav-container {
 	padding-top: 51px;
 }
 
 .ml-container {
 	margin-top:71px;
-	overflow-x: auto;
 	padding-left: 15px;
 	white-space: nowrap;
 }
