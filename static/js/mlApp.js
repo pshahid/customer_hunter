@@ -19,7 +19,7 @@ var myApp = angular.module('mlApp', [
         },
 
         controller: function($scope, $state, $rootScope, $modal, $http, timelines) {
-            $scope.ml_username = ml_username;
+            $scope.ml_username = 'paul.shahid';
 
             var ml_stream = $rootScope.initialFeed;
             streams = {};
