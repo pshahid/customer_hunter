@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-carousel.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ml.css') }}">
-    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.4.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome/css/font-awesome.min.css') }}"></script>
     <script type="text/javascript">
         var ml_username = '{{user.username}}';
     </script>
@@ -23,9 +23,6 @@
 
       <div class="container" ng-app="mlApp">
         <header ng-include="'/partials/nav.html'"></header>
-        <!-- <div ng-controller="NavController">
-            <div ng-view></div>
-        </div> -->
 
         <div class="container-fixed">
 
@@ -40,6 +37,7 @@
     </div>
     <script type="text/javascript" src="{{ url_for('static', filename='js/autobahn.js') }}"></script>
     <script src="{{ url_for('static', filename='js/angular.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/angular-sanitize.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/angular-route.js') }}"></script>
     <script src="{{ url_for('static', filename='js/angular-ui-router.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>

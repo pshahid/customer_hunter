@@ -1,6 +1,7 @@
 'use strict';
 var streams = {};
 var myApp = angular.module('mlApp', [
+    'ngSanitize',
     'ui.router',
     'mgcrea.ngStrap',
     'mlApp.controllers'
@@ -40,6 +41,7 @@ var myApp = angular.module('mlApp', [
 
             //Normalize the dates of all the other statuses, also kludgy
             angular.forEach(timelines.data, function(value, key) {
+                console.log(value);
                 angular.forEach(value.statuses, function(status, key) {
                     value.statuses[key].created_at = new Date(status.created_at)
                         .toUTCString()

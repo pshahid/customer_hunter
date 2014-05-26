@@ -1,27 +1,33 @@
 <div class="span5 col-xs-4 ml-stream-container" ng-repeat="stream in streams">
-    	<h3 style="padding-left: 10px;">{{stream.name}} <a class="ml-interact-link" ng-click="newStatus($event, stream.id)"><span class="ion-compose ml-interact-link"></span></a></h3>
+    	<h3 style="padding-left: 10px;">{{stream.name}} <a class="ml-interact-link" ng-click="newStatus($event, stream.id)"><i class="fa fa-pencil-square-o ml-interact-link"></i></a></h3>
     <div style="padding-top: 30px;">
     <ol class="list-unstyled">
 		<div id="row-{{doc.idstr}}" class="row ml-tweet-row" ng-repeat="doc in stream.statuses">
 		    <li id="{{doc.idstr}}">
 		        <div id="{{doc.idstr}}_div">
-		            <h4>@{{doc.user.screen_name}}</h4> 
-		            <p>{{doc.text}}</p>
+		            <h4>{{doc.user.name}} 
+		            	<span class="text-muted">
+		            		<small>
+		            			@{{doc.user.screen_name}}
+		            		</small>
+		            	</span>
+		            </h4> 
+		            <p><div ng-bind-html="doc.text | linky:'_blank'"></div></p>
 
 		            <div class="ml-twitter-controls">
 			            <div class="ml-favorite-link ml-interact-link">
 			            	<a href="javascript:void(0);" class="ml-interact-link">
-			            		<span class="ion-heart"></span>
+			            		<i class="fa fa-star"></i>
 			            	</a>
 			            </div>
 			            <div class="ml-reply-link ml-interact-link">
 			            	<a href="" ng-click="reply($event, doc.user, doc.idstr, stream.id)" class="ml-interact-link">
-			            		<span class="ion-reply"></span>
+			            		<i class="fa fa-reply"></i>
 			            	</a>
 			            </div>
 			            <div class="ml-retweet-link ml-interact-link">
 			            	<a class="ml-interact-link">
-			            		<span class="ion-loop"></span>
+			            		<i class="fa fa-retweet"></i>
 			            	</a>
 			            </div>
 		            </div>
