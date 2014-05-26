@@ -288,6 +288,7 @@ def reply_as():
                     api_inst.PostUpdate(d['message'])
 
     return json.dumps({'success': '200'})
+
 @app.route('/favorite', methods=['POST'])
 @auth.login_required
 def favorite():
@@ -299,6 +300,7 @@ def favorite():
         data = simplejson.loads(request.data)
 
         favorited_status = data['favorited_status_id']
+        favoriter = data['favorite_from_id']
 
 @app.route('/postas/<id>', methods=['POST'])
 @auth.login_required
