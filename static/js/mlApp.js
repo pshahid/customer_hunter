@@ -84,6 +84,10 @@ var myApp = angular.module('mlApp', [
                 });
             }
 
+            $scope.favorite = function($event, statusId, streamId) {
+                $http.post('/favorite', {statusId: statusId, senderId: streamId});
+            }
+
             $scope.newStatus = function($event, streamId) {
                 $scope.senderId = streamId;
                 $scope.newContent = "";

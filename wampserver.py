@@ -71,6 +71,9 @@ class Server(WampServerProtocol):
             t.save()
 
     def onSessionOpen(self):
+        log.msg("WAMP Session opened")
+        log.msg(self.transport)
+        log.msg(self.websocket_origin)
         self.registerForPubSub(config.wamp_topic)
         self.registerMethodForRpc("#getInit", self, Server.getInit)
         self.registerMethodForRpc('#getInitMongo', self, Server.getInitMongo)

@@ -86,6 +86,14 @@ def index():
     else:
         return tmpl
 
+@app.route('/contact')
+def contact():
+    return render_template('contact.html', title='Contact ML Systems')
+
+@app.route('/about')
+def about():
+    return render_template('about.html', title='About ML Systems')
+    
 @app.route('/home')
 @auth.login_required
 def home():
@@ -292,15 +300,19 @@ def reply_as():
 @app.route('/favorite', methods=['POST'])
 @auth.login_required
 def favorite():
-    user = auth.get_logged_in_user()
+    print "Got a favorite request"
+    print request.data
 
-    if user is not None:
-        tusers = [tuser for tuser in user.ml_user_id]
+    return json.dumps({'success': '200'})
+    # user = auth.get_logged_in_user()
 
-        data = simplejson.loads(request.data)
+    # if user is not None:
+    #     tusers = [tuser for tuser in user.ml_user_id]
 
-        favorited_status = data['favorited_status_id']
-        favoriter = data['favorite_from_id']
+    #     data = simplejson.loads(request.data)
+
+    #     favorited_status = data['favorited_status_id']
+    #     favoriter = data['favorite_from_id']
 
 @app.route('/postas/<id>', methods=['POST'])
 @auth.login_required
@@ -310,8 +322,11 @@ def post_as():
     '''
     pass
 
+def get_linked_accounts(user):
+    pass
+
 #This will get called with twistd daemon
 init_db()
 init_admin()
-app.run(port=5000)
+app.run(port=5000, debug=config.debug)
 
