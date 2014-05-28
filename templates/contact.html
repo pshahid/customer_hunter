@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ML Systems landing page">
+    <meta name="author" content="ML Systems">
+
+    {% block head %}
+    <title>{% block title %} {{ title }} {% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-carousel.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ml.css') }}">
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.4.1/css/ionicons.min.css">
+
+    <style type="text/css"></style><style id="holderjs-style" type="text/css"></style>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    {% endblock %}
+  </head>
+    <body style="">
+    {% block body %}
+    <!-- <div class="navbar-wrapper"> -->
+      <div id="ml-nav-container" class="container">
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="/">ML Systems</a>
+            </div>
+
+            <div class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li><a href="/home">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact us</a></li>
+              </ul>
+
+              <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                  <li><a href="/home">{% if user is not none %} {{ user.username }} {% else %} Log in {% endif %}</a></li>
+                  <li>
+                    <a class="ml-logout-link" href="{{ url_for('auth.logout') }}">
+                        {% if user %}
+                        <span id="ml-logout-icon" class="ion-log-out"></span>
+                        {% endif %}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          
+          </div>
+
+        </div>
+
+      </div>
+      <div class="container">
+        <div class="row">
+            <h2>Get in touch</h2>
+            <p>Please feel free to contact Paul or Josh with questions or concerns regarding what we do.</p>
+            <div class="contact">
+                <address>
+                    <strong>Paul Shahid</strong><br/>
+                    <a href="mailto:paul.shahid@mlsystems.io">paul.shahid@mlsystems.io</a>
+                </address>
+            </div>
+            <div class="contact">
+                <address>
+                   <strong>Josh Falter</strong><br/>
+                    <a href="mailto:josh.falter@mlsystems.io">josh.falter@mlsystems.io</a>
+                </address>
+            </div>
+        </div>
+      </div>
+      {% endblock %}
+  </body>
+  </html>
