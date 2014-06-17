@@ -69,20 +69,24 @@
 	font-size:23px;
 }
 
+.non-trainer {
+	display: none;
+}
+
 .ml-trainer {
 	display: inline;
 	float: left;
 	width: 25px;
-	height: 81px;
+	height: 58px;
 	padding-top: 5px;
 	padding-bottom:36px;
 	padding-right: 5px;
+	color: #428bca;
 }
 
 .ml-trainer a {
 	font-size: 12pt;
 	display:block;
-	color: black;
 }
 
 .ml-trainer span:hover {

@@ -70,6 +70,14 @@ myApp.service('PushService', ['$q', function($q) {
         self.rpc('#getInitMongo', null, callback, errback);
     };
 
+    this.acceptable = function(id) {
+        self.rpc('#acceptable', id);
+    };
+
+    this.unacceptable = function(id) {
+        self.rpc('#unacceptable', id);
+    };
+
     function connectSuccess(session) {
 
         self.session = session;

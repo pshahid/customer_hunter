@@ -85,7 +85,7 @@ var myApp = angular.module('mlApp', [
             }
 
             $scope.favorite = function($event, statusId, streamId) {
-                $http.post('/favorite', {statusId: statusId, senderId: streamId});
+                $http.post('/favorite', {statusId: statusId, accounts: [streamId]});
             }
 
             $scope.newStatus = function($event, streamId) {
@@ -111,6 +111,14 @@ var myApp = angular.module('mlApp', [
 
                 $http.post('/update', {message: text, sender: $scope.senderId});
                 $scope.senderId = '';
+            }
+
+            $scope.acceptable = function($event, id) {
+                $rootScope.pushService.acceptable(id);
+            }
+
+            $scope.unacceptable = function($event, id) {
+                $rootScope.pushService.unacceptable(id);
             }
 
         }
@@ -139,6 +147,7 @@ myApp.run(['$rootScope', '$state', 'PushService', function($rootScope, $state, P
     PushService.subscribe('feed', broadcastOnActivity);
 
     $rootScope.initialFeed = null;
+    $rootScope.pushService = PushService;
 
     PushService.getLatestML(
         function(result) {

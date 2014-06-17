@@ -4,6 +4,7 @@ from autobahn.wamp1.protocol import exportPub, exportRpc, WampServerFactory, Wam
 from twisted.python import log
 from peewee import *
 from pymongo import MongoClient
+import pymongo
 import config
 import models
 import sys
@@ -89,7 +90,8 @@ def get_last(date):
         ((models.Tweet.sgd_prediction == 1) & models.Tweet.logit_prediction == 1))).order_by(models.Tweet.created_date.desc()).limit(10)
 
 def get_last_mongo():
-    return [m for m in mongo_db.social_consumer.tweets.find(limit=20)]
+    #Return the last 20 tweets from mongo sorted by descending date
+    return [m for m in mongo_db.social_consumer.tweets.find(limit=20, sort=[('created_at', pymongo.DESCENDING)])]
 
 def init_db():
     db.connect()

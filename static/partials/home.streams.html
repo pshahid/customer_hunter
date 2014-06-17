@@ -4,6 +4,10 @@
     <ol class="list-unstyled">
 		<div id="row-{{doc.idstr}}" class="row ml-tweet-row" ng-repeat="doc in stream.statuses">
 		    <li id="{{doc.idstr}}">
+				<div ng-class="{'ml-trainer': stream.id == -1, 'non-trainer': stream.id != -1}" id="{{twitter_id}}_trainer">
+					<a href="" ng-click="acceptable($event, doc.idstr)"><i class="fa fa-check"></i></a>
+					<a href="" ng-click="unacceptable($event, doc.idstr)"><i class="fa fa-times"></i></a>
+				</div>
 		        <div id="{{doc.idstr}}_div">
 		            <h4>{{doc.user.name}} 
 		            	<span class="text-muted">

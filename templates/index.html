@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-carousel.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ml.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome/css/font-awesome.css') }}">
     <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.4.1/css/ionicons.min.css">
 
     <style type="text/css"></style><style id="holderjs-style" type="text/css"></style>
@@ -40,7 +41,6 @@
 
             <div class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
-                <li><a href="/home">Home</a></li>
                 <li><a href="/about">About</a></li>
                 <li><a href="/contact">Contact us</a></li>
               </ul>
@@ -51,7 +51,7 @@
                   <li>
                     <a class="ml-logout-link" href="{{ url_for('auth.logout') }}">
                         {% if user %}
-                        <span id="ml-logout-icon" class="ion-log-out"></span>
+                        <i class="fa fa-sign-out fa-lg"></i>
                         {% endif %}
                     </a>
                   </li>
@@ -66,7 +66,7 @@
       </div>
       <div class="jumbotron">
         <div class="container text-center">
-        <h1>SmartTarget</h1>
+        <h1>SmartConnect</h1>
         <p>Future of social media customer acquisition</p>
         <p><a class="btn btn-primary btn-lg" role="button">Request Demo</a></p>
       </div>
@@ -77,17 +77,23 @@
       <!-- Three columns of text below the carousel -->
       <div class="row">
         <div class="col-lg-4">
-          <img class="img-circle" data-src="holder.js/140x140" alt="140x140" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iMTQwIj48cmVjdCB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iI2VlZSI+PC9yZWN0Pjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjcwIiB5PSI3MCIgc3R5bGU9ImZpbGw6I2FhYTtmb250LXdlaWdodDpib2xkO2ZvbnQtc2l6ZToxMnB4O2ZvbnQtZmFtaWx5OkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmO2RvbWluYW50LWJhc2VsaW5lOmNlbnRyYWwiPjE0MHgxNDA8L3RleHQ+PC9zdmc+" style="width: 140px; height: 140px;">
+            <a href="#">
+              <i class="fa fa-rss fa-5x" style="color: rgb(90, 90, 90);"></i>
+            </a>
           <h2>Expand your reach.</h2>
           <p>Increase your connection potential to include potential customers as well as current customers.</p>
         </div><!-- /.col-lg-4 -->
         <div class="col-lg-4">
-          <img class="img-circle" data-src="holder.js/140x140" alt="140x140" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iMTQwIj48cmVjdCB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iI2VlZSI+PC9yZWN0Pjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjcwIiB5PSI3MCIgc3R5bGU9ImZpbGw6I2FhYTtmb250LXdlaWdodDpib2xkO2ZvbnQtc2l6ZToxMnB4O2ZvbnQtZmFtaWx5OkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmO2RvbWluYW50LWJhc2VsaW5lOmNlbnRyYWwiPjE0MHgxNDA8L3RleHQ+PC9zdmc+" style="width: 140px; height: 140px;">
+          <a href="#">
+            <i class="fa fa-comments fa-5x" style="color: rgb(90, 90, 90);"></i>
+          </a>
           <h2>Cut through the chatter</h2>
           <p>Intelligently tune out the noise of social media, and tune in to the customers you want.<p>
         </div><!-- /.col-lg-4 -->
         <div class="col-lg-4">
-          <img class="img-circle" data-src="holder.js/140x140" alt="140x140" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iMTQwIj48cmVjdCB3aWR0aD0iMTQwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iI2VlZSI+PC9yZWN0Pjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjcwIiB5PSI3MCIgc3R5bGU9ImZpbGw6I2FhYTtmb250LXdlaWdodDpib2xkO2ZvbnQtc2l6ZToxMnB4O2ZvbnQtZmFtaWx5OkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmO2RvbWluYW50LWJhc2VsaW5lOmNlbnRyYWwiPjE0MHgxNDA8L3RleHQ+PC9zdmc+" style="width: 140px; height: 140px;">
+          <a href="#">
+            <span class="fa fa-5x" style="color: rgb(90, 90, 90); font-style: normal; font-variant: normal;">#</span>
+          </a>
           <h2>Go beyond hashtags.</h2>
           <p>Don't settle for hashtags and key word searches. Leverage the power of innovative machine learning to take customer acquisition to the next level.</p>
         </div><!-- /.col-lg-4 -->
