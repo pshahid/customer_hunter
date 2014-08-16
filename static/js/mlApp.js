@@ -22,6 +22,7 @@ var myApp = angular.module('mlApp', [
             $scope.ml_username = 'paul.shahid';
 
             var ml_stream = $rootScope.initialFeed;
+            console.log(ml_stream);
             streams = {};
             streams['ml_stream'] = {'username': 'SmartTarget Stream'};
             
