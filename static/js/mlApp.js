@@ -57,7 +57,7 @@ var myApp = angular.module('mlApp', [
 
             //Root-scope event lets us know when there's an update from the websocket
             $rootScope.$on('ml_feed_update', function(evt, data) {
-
+                console.log("Ml feed update");
                 if (!(data.hasOwnProperty('ping'))) {
                     $scope.streams['ml_stream'].statuses.unshift(data);
                 } else {
@@ -151,6 +151,7 @@ myApp.run(['$rootScope', '$state', 'PushService', function($rootScope, $state, P
 
     PushService.getLatestML(
         function(result) {
+            console.log("Latest ML acquired");
             var results = angular.fromJson(result);
 
             $rootScope.initialFeed = results;
