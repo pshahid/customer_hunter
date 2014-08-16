@@ -34,7 +34,7 @@ var myApp = angular.module('mlApp', [
             });
 
             streams['ml_stream']['statuses'] = ml_stream;
-            streams['ml_stream']['name'] = 'SmartTarget Stream';
+            streams['ml_stream']['name'] = 'SmartConnect Stream';
             streams['ml_stream']['id'] = '-1'; //Assign it -1 for now; back-end needs to know this
 
             // timelines.data['7620182291'] = {id: '7620182291', name: 'derp', username: 'derp', statuses: []};

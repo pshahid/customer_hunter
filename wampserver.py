@@ -91,7 +91,7 @@ def get_last(date):
 
 def get_last_mongo():
     #Return the last 20 tweets from mongo sorted by descending date
-    return [m for m in mongo_db.social_consumer.tweets.find(limit=20, sort=[('created_at', pymongo.DESCENDING)])]
+    return [m for m in mongo_db.social_consumer.tweets.find(limit=20, sort=[('created_date', pymongo.DESCENDING)])]
 
 def init_db():
     db.connect()
