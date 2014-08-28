@@ -15,7 +15,10 @@ import modeler
 import consumer
 import datetime
 
-modeler_inst = modeler.Modeler(config.training, config.test)
+if config.use_modeler is True:
+    modeler_inst = modeler.Modeler(config.training, config.test)
+else:
+    modeler_inst = None
 
 filters = config.filters
 bounding_box = config.bounding_box
@@ -65,7 +68,7 @@ def stop():
     consumer.stop()
 
 def consume():
-    df = threads.deferToThread(consumer.consume)
+    df = threads.blockingCallFromThread(reactor, consumer.consume)
     df.addCallback(_consume_callback)
     df.addErrback(_consume_errback)
 
@@ -102,6 +105,9 @@ def _consume_callback(tweet):
         if int(predictions['logit'][0]) == 1 and int(predictions['sgd'][0]) == 1:
             client.sendSocialData(json.dumps(tweet))
         
+        print "Saving new tweet"
+        print new_tweet
+
         new_tweet.save()
 
         mongo_db.social_consumer.tweets.insert(tweet)
@@ -138,8 +144,9 @@ if __name__ == "__main__":
     _setup_logging()
     init_db()
 
-    modeler_inst.load_training()
-    modeler_inst.load_test()
+    if config.use_modeler is True:
+        modeler_inst.load_training()
+        modeler_inst.load_test()
 
     # Listen on the WAMP server port and domain
     factory = WampClientFactory('ws://' + config.domain + ':' + str(config.port))
