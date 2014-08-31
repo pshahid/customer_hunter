@@ -1,7 +1,7 @@
 import sys
 import time
 import string
-import datetime
+import arrow
 import logging
 import re
 from HTMLParser import HTMLParser
@@ -124,11 +124,11 @@ class ConsumerStrategy(object):
             #We have to take out the timezone because python doesn't support %z in 2.7
             #Twitter's timezone will ALWAYS be +0000 for any created_at fields.
             #This is not the case for other networks though!!
-            date = date.replace("+0000 ", "")
+            fmt = 'ddd MMM D HH:mm:ss Z YYYY'
 
-            return datetime.datetime.strptime(date, '%a %b %d %H:%M:%S %Y')
+            return arrow.get(date, fmt)
         else:
-            return datetime.datetime.now()
+            return arrow.utcnow()
 
     def _remove_all_tweet_urls(self, tweet):
         text = tweet["text"]

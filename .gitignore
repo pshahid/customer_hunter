@@ -1,4 +1,6 @@
 *.pyc
+logs
+bower_components
 *.log
 config.py
 .DS_STORE
