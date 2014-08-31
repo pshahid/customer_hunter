@@ -1,5 +1,6 @@
 *.pyc
 logs
+config
 bower_components
 *.log
 config.py
