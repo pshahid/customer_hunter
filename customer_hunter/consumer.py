@@ -119,17 +119,6 @@ class ConsumerStrategy(object):
 
         return text
 
-    def _parse_date(self, date):
-        if date != None:
-            #We have to take out the timezone because python doesn't support %z in 2.7
-            #Twitter's timezone will ALWAYS be +0000 for any created_at fields.
-            #This is not the case for other networks though!!
-            fmt = 'ddd MMM D HH:mm:ss Z YYYY'
-
-            return arrow.get(date, fmt)
-        else:
-            return arrow.utcnow()
-
     def _remove_all_tweet_urls(self, tweet):
         text = tweet["text"]
 
@@ -178,13 +167,10 @@ class LocationConsumer(ConsumerStrategy):
             raise TypeError("Expected a JSON object from stream, got None instead.")
 
         if tweet.get("lang", None) == "en":
-            date = self._parse_date(tweet.get('created_at'))
-
             msg = self._remove_all_tweet_urls(tweet)
             msg = self._scrub(msg)
 
             tweet['message'] = msg
-            tweet['created_date'] = date
             tweet['username'] = tweet.get('user').get('screen_name')
             tweet['twitter_id'] = tweet.get('id')
 
@@ -214,15 +200,12 @@ class FilterConsumer(ConsumerStrategy):
             raise TypeError("Expected a JSON object from stream, got None instead.")
 
         if tweet.get("lang", None) == "en":
-            date = self._parse_date(tweet.get('created_at'))
-
             msg = self._remove_all_tweet_urls(tweet)
             msg = self._scrub(msg)
 
             logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
 
             tweet['message'] = msg
-            tweet['created_date'] = date
             tweet['username'] = tweet.get('user').get('screen_name')
             tweet['twitter_id'] = tweet.get('id')
 
