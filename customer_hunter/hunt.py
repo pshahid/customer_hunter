@@ -5,13 +5,13 @@ import subprocess
 
 
 def start_twitter(production):
-    import jobs.twitter
+    import jobs.twitterjob as twitter
     print "Twitter job started."
 
     if production:
         print "Production is true"
 
-    jobs.twitter.start()
+    twitter.start()
 
 def start_insta(production):
     print "Instagram job started."
