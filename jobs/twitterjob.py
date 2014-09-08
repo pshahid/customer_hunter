@@ -1,7 +1,6 @@
 import sys
 
 print sys.path
-from config.customer_hunter_dev import *
 from consumer import LocationConsumer, FilterConsumer
 import twitter
 import logging
@@ -74,7 +73,12 @@ class TwitterConsumer(object):
         self.tweet_count += 1
         return self.consumer_context.consume(self.stream)
 
-def start():
+def start(prod):
+    if prod is True:
+        from config.customer_hunter import *
+    else:
+        from config.customer_hunter_dev import *
+
     predictor = None
 
     if use_modeler:

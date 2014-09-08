@@ -8,10 +8,7 @@ def start_twitter(production):
     import jobs.twitterjob as twitter
     print "Twitter job started."
 
-    if production:
-        print "Production is true"
-
-    twitter.start()
+    twitter.start(production)
 
 def start_insta(production):
     print "Instagram job started."
