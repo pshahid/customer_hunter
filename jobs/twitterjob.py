@@ -102,6 +102,7 @@ def start(prod):
 
     while True:
         tweet = twitter_consumer.consume()
+        print "Got a tweet"
         if tweet is not None:
             if use_modeler:
                 predictions = predictor.predict(tweet['message'])
