@@ -52,6 +52,16 @@ class ConsumerStrategy(object):
 
         return text
 
+    def _parse_date(self, date):
+
+        if date != None:
+            fmt = 'ddd MMM D HH:mm:ss Z YYYY'
+            print arrow.get(date, fmt).datetime
+            return arrow.get(date, fmt).datetime
+        else:
+            print arrow.utcnow().datetime
+            return arrow.utcnow().datetime
+
     def _remove_all_tweet_urls(self, tweet):
         text = tweet["text"]
 
@@ -102,11 +112,13 @@ class LocationConsumer(ConsumerStrategy):
         if tweet.get("lang", None) == "en":
             msg = self._remove_all_tweet_urls(tweet)
             msg = self._scrub(msg)
+            date = self._parse_date(tweet.get('created_at', None))
 
             tweet['message'] = msg
             tweet['username'] = tweet.get('user').get('screen_name')
             tweet['twitter_id'] = tweet.get('id')
-
+            tweet['created_date'] = date
+            
             if self._apply_filter(msg):
                 logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
                 return tweet
@@ -135,12 +147,14 @@ class FilterConsumer(ConsumerStrategy):
         if tweet.get("lang", None) == "en":
             msg = self._remove_all_tweet_urls(tweet)
             msg = self._scrub(msg)
+            date = self._parse_date(tweet.get('created_at'))
 
             logging.info(tweet.get('user').get('screen_name') + "/status/" + str(tweet.get('id')) + ": " + msg)
 
             tweet['message'] = msg
             tweet['username'] = tweet.get('user').get('screen_name')
             tweet['twitter_id'] = tweet.get('id')
+            tweet['created_date'] = date
 
             return tweet
 
