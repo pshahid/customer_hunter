@@ -119,7 +119,7 @@ def start(prod):
             print "Inserted a tweet!"
             print tweet
             # Use the mongo_collection config value here to do the db lookup
-            mongo[mongo_collection].tweets.insert(tweet)
+            print mongo[mongo_collection].tweets.insert(tweet)
 
 
 if __name__ == '__main__':
