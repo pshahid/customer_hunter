@@ -1,6 +1,6 @@
 *.pyc
 logs
-config
+customer_hunter_dev.py
 bower_components
 *.log
 config.py
