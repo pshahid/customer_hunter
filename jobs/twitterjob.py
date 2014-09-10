@@ -102,7 +102,7 @@ def start(prod):
 
     while True:
         tweet = twitter_consumer.consume()
-        print "Got a tweet"
+
         if tweet is not None:
             if use_modeler:
                 predictions = predictor.predict(tweet['message'])
@@ -116,10 +116,8 @@ def start(prod):
                 tweet['logit_prediction'] = -1
                 tweet['sgd_prediction'] = -1
 
-            print "Inserted a tweet!"
-            print tweet
             # Use the mongo_collection config value here to do the db lookup
-            print mongo[mongo_collection].tweets.insert(tweet)
+            mongo[mongo_collection].tweets.insert(tweet)
 
 
 if __name__ == '__main__':

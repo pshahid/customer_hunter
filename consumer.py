@@ -56,10 +56,8 @@ class ConsumerStrategy(object):
 
         if date != None:
             fmt = 'ddd MMM D HH:mm:ss Z YYYY'
-            print arrow.get(date, fmt).datetime
             return arrow.get(date, fmt).datetime
         else:
-            print arrow.utcnow().datetime
             return arrow.utcnow().datetime
 
     def _remove_all_tweet_urls(self, tweet):
