@@ -102,7 +102,10 @@ class LocationConsumer(ConsumerStrategy):
     
     def consume(self, stream):
         """Returns a dictionary representing a Tweet if the message passes the applied filter"""
-        tweet = stream.next()
+        try:
+            tweet = stream.next()
+        except StopIteration:
+            print "Stream stopped from twitter for whatever reason"
 
         if tweet == None:
             raise TypeError("Expected a JSON object from stream, got None instead.")
@@ -137,7 +140,10 @@ class FilterConsumer(ConsumerStrategy):
         super(FilterConsumer, self).__init__()
 
     def consume(self, stream):
-        tweet = stream.next()
+        try:
+            tweet = stream.next()
+        except StopIteration:
+            print "Stream stopped from twitter for whatever reason"
 
         if tweet == None:
             raise TypeError("Expected a JSON object from stream, got None instead.")
